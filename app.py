@@ -19,12 +19,22 @@ if "psych_tab" not in st.session_state:
     st.session_state.psych_tab = "Default Example"
 
 # persistent simulator parameters (used so sliders can appear below the plot)
-if "psych_mu" not in st.session_state:
-    st.session_state.psych_mu = 0.0
-if "psych_sigma" not in st.session_state:
-    st.session_state.psych_sigma = 1.0
+if "psych_alpha" not in st.session_state:
+    st.session_state.psych_alpha = 0.0
+if "psych_beta" not in st.session_state:
+    st.session_state.psych_beta = 3.0
+if "psych_gamma" not in st.session_state:
+    st.session_state.psych_gamma = 0.0
+if "psych_lambda" not in st.session_state:
+    st.session_state.psych_lambda = 0.02
 if "psych_amp" not in st.session_state:
     st.session_state.psych_amp = 1.0
+if "psych_ntrials" not in st.session_state:
+    st.session_state.psych_ntrials = 40
+
+# storage for simulated dataset
+if "psych_sim_data" not in st.session_state:
+    st.session_state.psych_sim_data = None
 
 
 def go_to(page_name: str):
@@ -75,7 +85,6 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
         st.markdown("---")
         st.markdown("### Psychometrics")
         # radio acts as the two internal tabs under the Home button
-        # default index depends on current session state
         options = ["Default Example", "Simulator"]
         default_index = 0 if st.session_state.get("psych_tab", "Default Example") == "Default Example" else 1
         psych_choice = st.radio("", options, index=default_index, key="psych_radio")
@@ -94,50 +103,107 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
                 go_to(PAGE_LANDING)
 
         else:
-            st.subheader("Simulator: Cumulative Gaussian")
-            st.write("Interactive simulator showing a cumulative Gaussian (CDF). Use the sliders below the graph to change parameters.")
+            st.subheader("Simulator: Psychometric function & simulated data")
+            st.write("Interactive simulator showing a psychometric function (cumulative Gaussian) with simulated binary response data. Use the sliders below the graph to change parameters and press 'Simulate data' to draw a new dataset.")
 
             # --- Plot using current stored parameters (so sliders can appear below the plot) ---
             import numpy as np
             import matplotlib.pyplot as plt
+            from math import erf
 
             # read parameters from session state (these will be updated by sliders below)
-            mu_val = st.session_state.get("psych_mu", 0.0)
-            sigma_val = st.session_state.get("psych_sigma", 1.0)
-            amp_val = st.session_state.get("psych_amp", 1.0)
+            alpha = st.session_state.get("psych_alpha", 0.0)  # threshold
+            beta = st.session_state.get("psych_beta", 3.0)    # slope
+            gamma = st.session_state.get("psych_gamma", 0.0)  # guess rate
+            lambd = st.session_state.get("psych_lambda", 0.02) # lapse rate
+            ntrials = int(st.session_state.get("psych_ntrials", 40))
 
-            x = np.linspace(-6, 6, 400)
+            # Stimulus levels (can be adjusted later)
+            stim_levels = np.linspace(-3, 3, 9)
 
-            def cum_gauss(x, mu, sigma):
-                # CDF of normal distribution using the error function.
-                # Some numpy builds don't expose np.erf; use math.erf applied elementwise
-                from math import erf
-                # If `x` is an array-like, compute erf elementwise with a list comprehension
-                arr = np.array([erf((float(xi) - mu) / (sigma * np.sqrt(2))) for xi in x])
-                return 0.5 * (1 + arr)
+            # psychometric function: cumulative normal with slope beta
+            def Phi(z):
+                # standard normal CDF using math.erf
+                return 0.5 * (1 + erf(z / np.sqrt(2)))
 
-            y = amp_val * cum_gauss(x, mu_val, sigma_val)
+            def psychometric_fn(x, alpha, beta, gamma=0.0, lambd=0.02):
+                # common parameterization: p = gamma + (1 - gamma - lambda) * Phi((x - alpha) * beta)
+                z = (x - alpha) * beta
+                return gamma + (1 - gamma - lambd) * Phi(z)
 
-            fig, ax = plt.subplots(figsize=(7, 4))
-            ax.plot(x, y, lw=2)
-            ax.set_xlabel("x")
-            ax.set_ylabel("Cumulative probability")
-            ax.set_ylim(-0.05, 1.05 * max(1.0, amp_val))
-            ax.set_title(f"Cumulative Gaussian — μ={mu_val:.2f}, σ={sigma_val:.2f}")
+            # range for plotting continuous curve
+            x = np.linspace(stim_levels[0] - 1.0, stim_levels[-1] + 1.0, 400)
+            y = psychometric_fn(x, alpha, beta, gamma, lambd)
+
+            # If simulated data exists in session state, use it; else create an initial deterministic dataset
+            sim_data = st.session_state.get("psych_sim_data", None)
+
+            if sim_data is None:
+                # generate expected proportions (no noise) so user sees points aligned to curve initially
+                prop = psychometric_fn(stim_levels, alpha, beta, gamma, lambd)
+                counts = (prop * ntrials).astype(int)
+                sim_data = {"stim": stim_levels, "successes": counts, "trials": np.full_like(counts, ntrials)}
+                st.session_state.psych_sim_data = sim_data
+
+            # Plot
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax.plot(x, y, lw=2, label="Psychometric curve")
+
+            # plot simulated data points (proportion correct) with error bars
+            stim = np.array(st.session_state.psych_sim_data["stim"])
+            succ = np.array(st.session_state.psych_sim_data["successes"])
+            trials = np.array(st.session_state.psych_sim_data["trials"])
+            prop_obs = succ / trials
+            ax.plot(stim, prop_obs, 'o', label="Simulated data")
+
+            # optional: show binomial 95% CI as vertical error bars
+            from statsmodels.stats.proportion import proportion_confint
+            cis_lower = []
+            cis_upper = []
+            for s, t in zip(succ, trials):
+                lo, up = proportion_confint(s, t, method='wilson')
+                cis_lower.append(s / t - lo)
+                cis_upper.append(up - s / t)
+            cis_lower = np.array(cis_lower)
+            cis_upper = np.array(cis_upper)
+            ax.errorbar(stim, prop_obs, yerr=[cis_lower, cis_upper], fmt='none', alpha=0.6)
+
+            ax.set_xlabel("Stimulus")
+            ax.set_ylabel("Proportion correct")
+            ax.set_ylim(-0.05, 1.05)
+            ax.set_title(f"Psychometric function — α={alpha:.2f}, β={beta:.2f}, γ={gamma:.2f}, λ={lambd:.3f}")
             ax.grid(alpha=0.2)
+            ax.legend()
 
             st.pyplot(fig)
 
             st.markdown("---")
+
             # --- Sliders BELOW the graph (they update session_state) ---
-            mu_new = st.slider("Mean (μ)", -3.0, 3.0, mu_val, step=0.05, key="psych_mu_slider")
-            sigma_new = st.slider("Std dev (σ)", 0.05, 3.0, sigma_val, step=0.05, key="psych_sigma_slider")
-            amp_new = st.slider("Amplitude", 0.1, 3.0, amp_val, step=0.05, key="psych_amp_slider")
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                alpha_new = st.slider("Threshold (α)", -2.5, 2.5, float(alpha), step=0.01, key="psych_alpha_slider")
+                beta_new = st.slider("Slope (β)", 0.1, 10.0, float(beta), step=0.1, key="psych_beta_slider")
+            with col2:
+                gamma_new = st.slider("Guess rate (γ)", 0.0, 0.5, float(gamma), step=0.01, key="psych_gamma_slider")
+                lambda_new = st.slider("Lapse rate (λ)", 0.0, 0.2, float(lambd), step=0.005, key="psych_lambda_slider")
+
+            ntrials_new = st.slider("Trials per stimulus", 1, 500, int(ntrials), step=1, key="psych_ntrials_slider")
 
             # Persist new values so the plot uses them on the next rerun
-            st.session_state.psych_mu = mu_new
-            st.session_state.psych_sigma = sigma_new
-            st.session_state.psych_amp = amp_new
+            st.session_state.psych_alpha = alpha_new
+            st.session_state.psych_beta = beta_new
+            st.session_state.psych_gamma = gamma_new
+            st.session_state.psych_lambda = lambda_new
+            st.session_state.psych_ntrials = int(ntrials_new)
+
+            # Simulate data button to draw binomial noisy data given the current parameters
+            if st.button("Simulate data", key="psych_simulate_button"):
+                rng = np.random.default_rng()
+                p_true = psychometric_fn(stim_levels, alpha_new, beta_new, gamma_new, lambda_new)
+                successes = rng.binomial(ntrials_new, p_true)
+                st.session_state.psych_sim_data = {"stim": stim_levels, "successes": successes, "trials": np.full_like(successes, ntrials_new)}
+                st.experimental_rerun()
 
             st.divider()
             if st.button("← Back to landing", key="back_from_psych_sim"):
