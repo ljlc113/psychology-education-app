@@ -109,8 +109,12 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
             x = np.linspace(-6, 6, 400)
 
             def cum_gauss(x, mu, sigma):
-                # CDF of normal distribution using erf (no extra dependencies)
-                return 0.5 * (1 + np.erf((x - mu) / (sigma * np.sqrt(2))))
+                # CDF of normal distribution using the error function.
+                # Some numpy builds don't expose np.erf; use math.erf applied elementwise
+                from math import erf
+                # If `x` is an array-like, compute erf elementwise with a list comprehension
+                arr = np.array([erf((float(xi) - mu) / (sigma * np.sqrt(2))) for xi in x])
+                return 0.5 * (1 + arr)
 
             y = amp_val * cum_gauss(x, mu_val, sigma_val)
 
