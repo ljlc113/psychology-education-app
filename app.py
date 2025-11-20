@@ -160,18 +160,6 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
             prop_obs = succ / trials
             ax.plot(stim, prop_obs, 'o', label="Simulated data")
 
-            # optional: show binomial 95% CI as vertical error bars
-            from statsmodels.stats.proportion import proportion_confint
-            cis_lower = []
-            cis_upper = []
-            for s, t in zip(succ, trials):
-                lo, up = proportion_confint(s, t, method='wilson')
-                cis_lower.append(s / t - lo)
-                cis_upper.append(up - s / t)
-            cis_lower = np.array(cis_lower)
-            cis_upper = np.array(cis_upper)
-            ax.errorbar(stim, prop_obs, yerr=[cis_lower, cis_upper], fmt='none', alpha=0.6)
-
             ax.set_xlabel("Stimulus")
             ax.set_ylabel("Proportion correct")
             ax.set_ylim(-0.05, 1.05)
