@@ -123,8 +123,12 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 
             # psychometric function: cumulative normal with slope beta
             def Phi(z):
-                # standard normal CDF using math.erf
-                return 0.5 * (1 + erf(z / np.sqrt(2)))
+                # standard normal CDF using math.erf but applied elementwise.
+                # math.erf doesn't accept numpy arrays, so compute elementwise and return an array.
+                from math import erf as _erf
+                z_arr = np.asarray(z)
+                erf_vals = np.array([_erf(float(zi) / np.sqrt(2)) for zi in z_arr])
+                return 0.5 * (1 + erf_vals)
 
             def psychometric_fn(x, alpha, beta, gamma=0.0, lambd=0.02):
                 # common parameterization: p = gamma + (1 - gamma - lambda) * Phi((x - alpha) * beta)
