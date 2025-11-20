@@ -1,72 +1,69 @@
-# app.py
 import streamlit as st
 
-# ----- Page / app config -----
+# Set page config
 st.set_page_config(page_title="Cognition Educational App", layout="wide")
 
-# ----- Constants -----
-PAGE_LANDING = "landing"
-PAGE_PSYCHOMETRICS = "Psychometrics"
-PAGE_ECONOMIC = "Economic Choices + Utility Curves"
-PAGE_WORKING_MEMORY = "Working Memory"
-
-# ----- Initialize session state -----
+# Initialize session state for navigation
 if "page" not in st.session_state:
-    st.session_state.page = PAGE_LANDING
+    st.session_state.page = "landing"
 
-def go_to(page_name: str):
-    """Set the current page in session state."""
-    st.session_state.page = page_name
+# Page labels
+PAGES = {
+    "Psychometrics": "Psychometrics",
+    "Economic Choices + Utility Curves": "Economic Choices + Utility Curves",
+    "Working Memory": "Working Memory",
+}
 
-# ----- Landing left with big styled buttons (light blue + hover) -----
-def render_landing_left():
-    st.markdown("""
-        <style>
-        .big-button .stButton>button {
-            width: 100% !important;
-            padding: 16px 26px !important;
-            font-size: 18px !important;
-            font-weight: 600 !important;
-            border-radius: 10px !important;
-            margin-bottom: 14px !important;
-            transition: all 0.15s ease-in-out !important;
-        }
+# Helper to render the landing page
+def show_landing():
+    left_col, right_col = st.columns([1, 3])
 
-        .big-button .stButton>button:hover {
-            background-color: #f0f0f0 !important;   /* subtle hover highlight */
-            transform: translateY(-2px);
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.12);
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    with left_col:
+        st.markdown("### Sections")
+        # Buttons that set the current page in session state
+        if st.button("Psychometrics", key="btn_psycho"):
+            st.session_state.page = "Psychometrics"
+        if st.button("Economic Choices + Utility Curves", key="btn_econ"):
+            st.session_state.page = "Economic Choices + Utility Curves"
+        if st.button("Working Memory", key="btn_wm"):
+            st.session_state.page = "Working Memory"
 
-    # Use on_click to ensure single-click navigation
-    with st.container():
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
-        st.button(
-            PAGE_PSYCHOMETRICS,
-            key="btn_psych",
-            on_click=go_to,
-            args=(PAGE_PSYCHOMETRICS,)
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+    with right_col:
+        st.title("Cognition Educational App")
+        st.write("Welcome — choose a section from the left to explore the topic.")
 
-    with st.container():
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
-        st.button(
-            PAGE_ECONOMIC,
-            key="btn_econ",
-            on_click=go_to,
-            args=(PAGE_ECONOMIC,)
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
 
-    with st.container():
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
-        st.button(
-            PAGE_WORKING_MEMORY,
-            key="btn_working",
-            on_click=go_to,
-            args=(PAGE_WORKING_MEMORY,)
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+# Helper to render a content page with a back-arrow button
+def show_content(page_label: str):
+    left_col, right_col = st.columns([1, 3])
+
+    with left_col:
+        # Keep a small navigation area on the left for consistency
+        st.markdown("### Navigation")
+        # Optional: show a disabled listing of other pages
+        for k in PAGES:
+            if k == page_label:
+                st.markdown(f"- **{k}**")
+            else:
+                st.markdown(f"- {k}")
+
+    with right_col:
+        st.header(page_label)
+        st.write(f"This page will contain content about **{page_label}**.")
+        if st.button("← Back to landing", key=f"back_{page_label}"):
+            st.session_state.page = "landing"
+
+
+# Router - decide which view to show
+if st.session_state.page == "landing":
+    show_landing()
+elif st.session_state.page in PAGES:
+    show_content(st.session_state.page)
+else:
+    # Fallback to landing if something unexpected appears in session state
+    st.session_state.page = "landing"
+    show_landing()
+
+
+# Footer small note
+st.sidebar.write("\n\nMade for the psychology-education-app repository")
