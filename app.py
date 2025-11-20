@@ -1,105 +1,51 @@
-# app.py
-import streamlit as st
-
-# ----- Page / app config -----
-st.set_page_config(page_title="Cognition Educational App", layout="wide")
-
-# ----- Constants -----
-PAGE_LANDING = "landing"
-PAGE_PSYCHOMETRICS = "Psychometrics"
-PAGE_ECONOMIC = "Economic Choices + Utility Curves"
-PAGE_WORKING_MEMORY = "Working Memory"
-
-# ----- Initialize session state -----
-if "page" not in st.session_state:
-    st.session_state.page = PAGE_LANDING
-
-def go_to(page_name: str):
-    """Set the current page in session state."""
-    st.session_state.page = page_name
-
-# ----- Helper: render landing left buttons -----
 def render_landing_left():
-    """
-    Render the three landing buttons on the left column.
-    Each button navigates to its page.
-    """
-    st.markdown("### Menu")
-    # Use individual buttons with on_click callbacks to persist navigation
-    if st.button(PAGE_PSYCHOMETRICS, key="btn_psychometrics"):
-        go_to(PAGE_PSYCHOMETRICS)
-    if st.button(PAGE_ECONOMIC, key="btn_economic"):
-        go_to(PAGE_ECONOMIC)
-    if st.button(PAGE_WORKING_MEMORY, key="btn_working"):
-        go_to(PAGE_WORKING_MEMORY)
+    st.markdown("""
+        <style>
+        /* Base button styling */
+        .big-button button {
+            padding: 16px 26px !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            border-radius: 10px !important;
+            margin-bottom: 14px !important;
 
-# ----- Layout and routing -----
-# Create two columns: narrow left for navigation, wide right for content
-left_col, right_col = st.columns([1.0, 3.5])
+            background-color: #cfe8ff !important;   /* light blue */
+            color: #003366 !important;              /* navy text */
+            border: 1px solid #8bb8e8 !important;   /* soft border */
 
-# Landing page layout
-if st.session_state.page == PAGE_LANDING:
-    with left_col:
-        # Show the three buttons on the left
-        render_landing_left()
+            transition: all 0.18s ease-in-out !important;
+        }
 
-    with right_col:
-        # Right side landing title
-        st.markdown("<h1 style='margin-bottom:8px;'>Cognition Educational App</h1>", unsafe_allow_html=True)
-        st.write("Welcome — choose a topic from the left to continue.")
-        st.write("This is the landing page for the educational app. Each button will open a simple page for that topic.")
-        st.divider()
+        /* Hover effect: brighter + lift */
+        .big-button button:hover {
+            background-color: #b3d9ff !important;
+            border-color: #66a3e0 !important;
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.12);
+        }
 
-# Psychometrics page
-elif st.session_state.page == PAGE_PSYCHOMETRICS:
-    # Content column: show page title and a back arrow
-    with right_col:
-        st.header(PAGE_PSYCHOMETRICS)
-        st.write("Placeholder page for Psychometrics content.")
-        st.write("Add visualizations, interactive exercises, or theory here.")
-        st.divider()
-        # Back button
-        if st.button("← Back to landing", key="back_from_psych"):
-            go_to(PAGE_LANDING)
+        /* Focus outline when clicked (accessible) */
+        .big-button button:focus {
+            outline: 3px solid #66a3e0 !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    # Left column can optionally offer the same landing buttons for quick jumps
-    with left_col:
-        st.markdown("### Navigation")
-        # Small navigation convenience: optional quick links (do not override primary flow)
-        if st.button("Home", key="home_from_psych"):
-            go_to(PAGE_LANDING)
+    # Wrap each button in a CSS-targetable container
+    with st.container():
+        st.markdown('<div class="big-button">', unsafe_allow_html=True)
+        if st.button(PAGE_PSYCHOMETRICS, use_container_width=True, key="btn_psychometrics_big"):
+            go_to(PAGE_PSYCHOMETRICS)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# Economic Choices + Utility Curves page
-elif st.session_state.page == PAGE_ECONOMIC:
-    with right_col:
-        st.header(PAGE_ECONOMIC)
-        st.write("Placeholder page for Economic Choices and Utility Curves content.")
-        st.write("Add diagrams of utility curves, choice tasks, or interactive widgets here.")
-        st.divider()
-        if st.button("← Back to landing", key="back_from_econ"):
-            go_to(PAGE_LANDING)
+    with st.container():
+        st.markdown('<div class="big-button">', unsafe_allow_html=True)
+        if st.button(PAGE_ECONOMIC, use_container_width=True, key="btn_economic_big"):
+            go_to(PAGE_ECONOMIC)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    with left_col:
-        st.markdown("### Navigation")
-        if st.button("Home", key="home_from_econ"):
-            go_to(PAGE_LANDING)
-
-# Working Memory page
-elif st.session_state.page == PAGE_WORKING_MEMORY:
-    with right_col:
-        st.header(PAGE_WORKING_MEMORY)
-        st.write("Placeholder page for Working Memory content.")
-        st.write("Add span tasks, explanations, or demos here.")
-        st.divider()
-        if st.button("← Back to landing", key="back_from_working"):
-            go_to(PAGE_LANDING)
-
-    with left_col:
-        st.markdown("### Navigation")
-        if st.button("Home", key="home_from_working"):
-            go_to(PAGE_LANDING)
-
-# Safety fallback (shouldn't trigger)
-else:
-    st.error("Unknown page. Returning to home.")
-    go_to(PAGE_LANDING)
+    with st.container():
+        st.markdown('<div class="big-button">', unsafe_allow_html=True)
+        if st.button(PAGE_WORKING_MEMORY, use_container_width=True, key="btn_working_big"):
+            go_to(PAGE_WORKING_MEMORY)
+        st.markdown('</div>', unsafe_allow_html=True)
