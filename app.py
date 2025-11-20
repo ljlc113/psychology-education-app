@@ -20,76 +20,53 @@ def go_to(page_name: str):
 
 # ----- Landing left with big styled buttons (light blue + hover) -----
 def render_landing_left():
-    st.markdown(
-        """
+    st.markdown("""
         <style>
-        /* Robust selectors to target Streamlit button elements across versions */
-        .big-button .stButton>button,
-        .big-button div.stButton>button,
-        .big-button button {
+        .big-button .stButton>button {
             width: 100% !important;
             padding: 16px 26px !important;
             font-size: 18px !important;
             font-weight: 600 !important;
             border-radius: 10px !important;
             margin-bottom: 14px !important;
-
-            background-color: #cfe8ff !important;   /* light blue */
-            color: #003366 !important;              /* navy text */
-            border: 1px solid #8bb8e8 !important;   /* soft border */
-
-            transition: all 0.18s ease-in-out !important;
+            transition: all 0.15s ease-in-out !important;
         }
 
-        .big-button .stButton>button:hover,
-        .big-button div.stButton>button:hover,
-        .big-button button:hover {
-            background-color: #b3d9ff !important;
-            border-color: #66a3e0 !important;
+        .big-button .stButton>button:hover {
+            background-color: #f0f0f0 !important;   /* subtle hover highlight */
             transform: translateY(-2px);
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.12);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.12);
         }
-
-        .big-button .stButton>button:focus,
-        .big-button div.stButton>button:focus,
-        .big-button button:focus {
-            outline: 3px solid #66a3e0 !important;
-        }
-
-        /* Optional: slightly separate menu from page content */
-        .left-menu-spacer { margin-bottom: 10px; padding: 0; }
         </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
-    # Put each button in its own container/div so css only affects these
+    # Use on_click to ensure single-click navigation
     with st.container():
-        st.markdown('<div class="big-button left-menu-spacer">', unsafe_allow_html=True)
+        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button(
             PAGE_PSYCHOMETRICS,
-            key="btn_psychometrics_big",
+            key="btn_psych",
             on_click=go_to,
-            args=(PAGE_PSYCHOMETRICS,),
+            args=(PAGE_PSYCHOMETRICS,)
         )
         st.markdown('</div>', unsafe_allow_html=True)
 
     with st.container():
-        st.markdown('<div class="big-button left-menu-spacer">', unsafe_allow_html=True)
+        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button(
             PAGE_ECONOMIC,
-            key="btn_economic_big",
+            key="btn_econ",
             on_click=go_to,
-            args=(PAGE_ECONOMIC,),
+            args=(PAGE_ECONOMIC,)
         )
         st.markdown('</div>', unsafe_allow_html=True)
 
     with st.container():
-        st.markdown('<div class="big-button left-menu-spacer">', unsafe_allow_html=True)
+        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button(
             PAGE_WORKING_MEMORY,
-            key="btn_working_big",
+            key="btn_working",
             on_click=go_to,
-            args=(PAGE_WORKING_MEMORY,),
+            args=(PAGE_WORKING_MEMORY,)
         )
         st.markdown('</div>', unsafe_allow_html=True)
