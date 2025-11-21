@@ -1,5 +1,7 @@
 # app.py
 import streamlit as st
+import numpy as np
+from math import erf as _erf
 
 # ----- Page / app config -----
 st.set_page_config(page_title="Cognition Educational App", layout="wide")
@@ -14,9 +16,9 @@ PAGE_WORKING_MEMORY = "Working Memory"
 if "page" not in st.session_state:
     st.session_state.page = PAGE_LANDING
 
-# Ensure psychometrics tab state exists
+# Ensure psychometrics tab state exists (default to Introduction)
 if "psych_tab" not in st.session_state:
-    st.session_state.psych_tab = "Default Example"
+    st.session_state.psych_tab = "Introduction"
 
 # persistent simulator parameters (used so sliders can appear below the plot)
 if "psych_alpha" not in st.session_state:
@@ -27,8 +29,6 @@ if "psych_gamma" not in st.session_state:
     st.session_state.psych_gamma = 0.0
 if "psych_lambda" not in st.session_state:
     st.session_state.psych_lambda = 0.02
-if "psych_amp" not in st.session_state:
-    st.session_state.psych_amp = 1.0
 if "psych_ntrials" not in st.session_state:
     st.session_state.psych_ntrials = 40
 
@@ -41,6 +41,7 @@ def go_to(page_name: str):
     """Set the current page in session state."""
     st.session_state.page = page_name
 
+
 # ----- Helper: render landing left buttons -----
 def render_landing_left():
     """
@@ -50,13 +51,14 @@ def render_landing_left():
     st.markdown("### Menu")
     # Use individual buttons with on_click callbacks to persist navigation
     if st.button(PAGE_PSYCHOMETRICS, key="btn_psychometrics"):
-        # when entering the Psychometrics section from landing, default to Default Example
-        st.session_state.psych_tab = "Default Example"
+        # when entering Psychometrics from landing, default to Introduction
+        st.session_state.psych_tab = "Introduction"
         go_to(PAGE_PSYCHOMETRICS)
     if st.button(PAGE_ECONOMIC, key="btn_economic"):
         go_to(PAGE_ECONOMIC)
     if st.button(PAGE_WORKING_MEMORY, key="btn_working"):
         go_to(PAGE_WORKING_MEMORY)
+
 
 # ----- Layout and routing -----
 # Create two columns: narrow left for navigation, wide right for content
@@ -65,18 +67,20 @@ left_col, right_col = st.columns([1.0, 3.5])
 # Landing page layout
 if st.session_state.page == PAGE_LANDING:
     with left_col:
-        # Show the three buttons on the left
         render_landing_left()
 
     with right_col:
-        # Right side landing title
-        st.markdown("<h1 style='margin-bottom:8px;'>Computational Models of Perception, Choice, and Memory</h1>", unsafe_allow_html=True)
-        st.write("This app provides an interactive introduction to how humans perceive information, evaluate uncertain outcomes, and maintain short-term memories. Across the modules, you will explore how stimulus–response relationships are modeled in psychometrics, how economics describes rational and real-world decisions under uncertainty, how the brain normalizes value based on context, and how working memory can be stored silently through synaptic mechanisms. Use the sidebar to move through each section, adjust parameters, and observe how models and neural theories behave.")
+        st.markdown(
+            "<h1 style='margin-bottom:8px;'>Computational Models of Perception, Choice, and Memory</h1>",
+            unsafe_allow_html=True,
+        )
+        st.write(
+            "This app provides an interactive introduction to how humans perceive information, evaluate uncertain outcomes, and maintain short-term memories. Across the modules, you will explore how stimulus–response relationships are modeled in psychometrics, how economics describes rational and real-world decisions under uncertainty, how the brain normalizes value based on context, and how working memory can be stored silently through synaptic mechanisms. Use the sidebar to move through each section, adjust parameters, and observe how models and neural theories behave."
+        )
         st.divider()
 
-# Psychometrics page - replaced filler with two internal tabs and a simulator
+# Psychometrics page (three tabs: Introduction, Default Example, Simulator)
 elif st.session_state.page == PAGE_PSYCHOMETRICS:
-    # Left column: Home + psychometrics internal tabs
     with left_col:
         st.markdown("### Navigation")
         if st.button("Home", key="home_from_psych"):
@@ -84,19 +88,29 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 
         st.markdown("---")
         st.markdown("### Psychometrics")
-        # radio acts as the two internal tabs under the Home button
-        options = ["Default Example", "Simulator"]
-        default_index = 0 if st.session_state.get("psych_tab", "Default Example") == "Default Example" else 1
+        options = ["Introduction", "Default Example", "Simulator"]
+        current = st.session_state.get("psych_tab", "Introduction")
+        default_index = options.index(current) if current in options else 0
         psych_choice = st.radio("", options, index=default_index, key="psych_radio")
-        # store selected subtab in session state so we can persist between reruns
         st.session_state.psych_tab = psych_choice
 
-    # Right column: render content for the selected psychometrics subtab
     with right_col:
         st.header(PAGE_PSYCHOMETRICS)
 
-        if st.session_state.psych_tab == "Default Example":
-            st.subheader("Perimetric sensitivity and response variability in glaucoma (Miranda & Henson, 2008)")
+        # Introduction tab
+        if st.session_state.psych_tab == "Introduction":
+            st.subheader("Psychometrics")
+            st.write(
+                "Psychometrics examines the relationship between stimulus properties and behavioral responses, using curves and statistical models to quantify perception and decision thresholds."
+            )
+            st.divider()
+            if st.button("← Back to landing", key="back_from_psych_intro"):
+                go_to(PAGE_LANDING)
+
+        # Default Example tab (local label kept as 'Default Example' but header changed)
+        elif st.session_state.psych_tab == "Default Example":
+            st.subheader("See a psychometric function interpreted in the context of a study")
+            st.markdown("**Study:** Perimetric sensitivity and response variability in glaucoma (Miranda & Henson, 2008)")
 
             st.write(
                 "This study looked at how reliably people with glaucoma detected brief flashes of light of different brightness. It compared two testing methods to see which gave more consistent and sensitive results across parts of the visual field."
@@ -106,9 +120,35 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
                 "**Method.** A flash of light of variable intensity was presented repeatedly at a fixed location in the visual field of a subject who reported whether the flash was visible. There were 3–20 trials at each stimulus level."
             )
 
-            # display the actual study figure uploaded by the user
-            # Display the embedded figure directly from the repo's assets folder
-            st.image("assets/miranda_henson.png", caption="Examples of psychometric data from Miranda & Henson (2008)")
+            # Try to display the image from assets folder; fall back if missing
+            img_path = "assets/miranda_henson.png"
+            try:
+                from PIL import Image
+
+                img = Image.open(img_path)
+                st.image(img, caption="Examples of psychometric data from Miranda & Henson (2008)")
+            except Exception:
+                # fallback representative curve
+                x_plot = np.linspace(-3, 3, 300)
+                def Phi_scalar(z):
+                    return 0.5 * (1 + _erf(z / np.sqrt(2)))
+                alpha_rep = 0.0
+                beta_rep = 3.0
+                gamma_rep = 0.02
+                lambda_rep = 0.02
+                y_plot = gamma_rep + (1 - gamma_rep - lambda_rep) * np.array(
+                    [Phi_scalar((xi - alpha_rep) * beta_rep) for xi in x_plot]
+                )
+                import matplotlib.pyplot as plt
+
+                fig_rep, ax_rep = plt.subplots(figsize=(7, 3.5))
+                ax_rep.plot(x_plot, y_plot, lw=2)
+                ax_rep.set_xlabel("Stimulus intensity (a.u.)")
+                ax_rep.set_ylabel("Proportion seen")
+                ax_rep.set_ylim(-0.02, 1.02)
+                ax_rep.set_title("Representative psychometric curve (illustrative)")
+                ax_rep.grid(alpha=0.2)
+                st.pyplot(fig_rep)
 
             st.write(
                 "These plots show how the probability of seeing a flash changes with its brightness for four example locations. In some cases the two testing methods agree closely, while in others one method shows lower sensitivity or more variability."
@@ -116,88 +156,104 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 
             st.markdown("---")
 
-            st.markdown("""
+            st.markdown(
+                """
 | **Feature**        | **Interpretation (max 2 sentences)** |
 |-------------------|----------------------------------------|
 | **Threshold (α)** | The threshold marks the stimulus intensity where the observer begins to reliably detect the flash. In glaucoma, higher thresholds reflect reduced sensitivity at that location. |
 | **Slope (β)**     | The slope indicates how quickly detection improves as intensity increases. Steeper slopes mean responses are more consistent and less variable. |
 | **Guess rate (γ)**| The guess rate reflects the baseline probability of reporting a flash when it is too dim to see. It is usually low in this task and relates to response bias. |
 | **Lapse rate (λ)**| The lapse rate captures occasional misses even at bright intensities. These lapses can reflect momentary inattention or blinking and reduce the maximum performance. |
-""")
+"""
+            )
 
             st.divider()
             if st.button("← Back to landing", key="back_from_psych_default"):
                 go_to(PAGE_LANDING)
 
+        # Simulator tab
         else:
             st.subheader("Simulator: Psychometric function & simulated data")
-            st.write("Interactive simulator showing a psychometric function (cumulative Gaussian) with simulated binary response data. Use the sliders below the graph to change parameters and press 'Simulate data' to draw a new dataset.")
+            st.write(
+                "Interactive simulator showing a psychometric function (cumulative Gaussian) with simulated binary response data. Use the sliders below the graph to change parameters and press 'Simulate data' to draw a new dataset."
+            )
 
-            # --- Plot using current stored parameters (so sliders can appear below the plot) ---
-            import numpy as np
-            import matplotlib.pyplot as plt
-            from math import erf
-
-            # read parameters from session state (these will be updated by sliders below)
+            # --- Parameters ---
             alpha = st.session_state.get("psych_alpha", 0.0)  # threshold
             beta = st.session_state.get("psych_beta", 3.0)    # slope
             gamma = st.session_state.get("psych_gamma", 0.0)  # guess rate
             lambd = st.session_state.get("psych_lambda", 0.02) # lapse rate
             ntrials = int(st.session_state.get("psych_ntrials", 40))
 
-            # Stimulus levels (can be adjusted later)
+            # Stimulus levels
             stim_levels = np.linspace(-3, 3, 9)
 
-            # psychometric function: cumulative normal with slope beta
+            # psychometric functions (elementwise)
             def Phi(z):
-                # standard normal CDF using math.erf but applied elementwise.
-                # math.erf doesn't accept numpy arrays, so compute elementwise and return an array.
-                from math import erf as _erf
                 z_arr = np.asarray(z)
                 erf_vals = np.array([_erf(float(zi) / np.sqrt(2)) for zi in z_arr])
                 return 0.5 * (1 + erf_vals)
 
             def psychometric_fn(x, alpha, beta, gamma=0.0, lambd=0.02):
-                # common parameterization: p = gamma + (1 - gamma - lambda) * Phi((x - alpha) * beta)
                 z = (x - alpha) * beta
                 return gamma + (1 - gamma - lambd) * Phi(z)
 
-            # range for plotting continuous curve
+            # continuous curve for plotting
             x = np.linspace(stim_levels[0] - 1.0, stim_levels[-1] + 1.0, 400)
             y = psychometric_fn(x, alpha, beta, gamma, lambd)
 
-            # If simulated data exists in session state, use it; else create an initial deterministic dataset
-            sim_data = st.session_state.get("psych_sim_data", None)
-
-            if sim_data is None:
-                # generate expected proportions (no noise) so user sees points aligned to curve initially
+            # default simulated data (if none exists)
+            if st.session_state.psych_sim_data is None:
                 prop = psychometric_fn(stim_levels, alpha, beta, gamma, lambd)
                 counts = (prop * ntrials).astype(int)
-                sim_data = {"stim": stim_levels, "successes": counts, "trials": np.full_like(counts, ntrials)}
-                st.session_state.psych_sim_data = sim_data
+                st.session_state.psych_sim_data = {"stim": stim_levels, "successes": counts, "trials": np.full_like(counts, ntrials)}
 
-            # Interactive Plot using Plotly with hover tooltips for simulated points
-            import plotly.graph_objects as go
-
-            stim = np.array(st.session_state.psych_sim_data["stim"]) if st.session_state.psych_sim_data is not None else stim_levels
-            succ = np.array(st.session_state.psych_sim_data["successes"]) if st.session_state.psych_sim_data is not None else (psychometric_fn(stim, alpha, beta, gamma, lambd) * ntrials).astype(int)
-            trials = np.array(st.session_state.psych_sim_data["trials"]) if st.session_state.psych_sim_data is not None else np.full_like(succ, ntrials)
+            stim = np.array(st.session_state.psych_sim_data["stim"])
+            succ = np.array(st.session_state.psych_sim_data["successes"])
+            trials = np.array(st.session_state.psych_sim_data["trials"])
             prop_obs = succ / trials
 
-            fig = go.Figure()
-            # psychometric curve
-            fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Psychometric curve'))
-            # simulated data points with hovertemplate
-            hover_tmpl = "This is a trial where stimulus intensity is %{x:.2f} and proportion correct is %{y:.2f}<extra></extra>"
-            fig.add_trace(go.Scatter(x=stim, y=prop_obs, mode='markers', name='Simulated data', marker=dict(color='orange', size=10), hovertemplate=hover_tmpl))
+            # Interactive Plotly plot with hover text
+            try:
+                import plotly.graph_objects as go
 
-            fig.update_layout(xaxis_title='Stimulus', yaxis_title='Proportion correct', yaxis=dict(range=[-0.05, 1.05]), title=f"Psychometric function — α={alpha:.2f}, β={beta:.2f}, γ={gamma:.2f}, λ={lambd:.3f}")
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=x, y=y, mode="lines", name="Psychometric curve"))
+                hover_tmpl = "This is a trial where stimulus intensity is %{x:.2f} and proportion correct is %{y:.2f}<extra></extra>"
+                fig.add_trace(
+                    go.Scatter(
+                        x=stim,
+                        y=prop_obs,
+                        mode="markers",
+                        name="Simulated data",
+                        marker=dict(color="orange", size=10),
+                        hovertemplate=hover_tmpl,
+                    )
+                )
+                fig.update_layout(
+                    xaxis_title="Stimulus",
+                    yaxis_title="Proportion correct",
+                    yaxis=dict(range=[-0.05, 1.05]),
+                    title=f"Psychometric function — α={alpha:.2f}, β={beta:.2f}, γ={gamma:.2f}, λ={lambd:.3f}",
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            except Exception:
+                # if plotly is missing or fails, fall back to matplotlib static plot
+                import matplotlib.pyplot as plt
 
-            st.plotly_chart(fig, use_container_width=True)
+                fig2, ax2 = plt.subplots(figsize=(8, 4))
+                ax2.plot(x, y, lw=2)
+                ax2.plot(stim, prop_obs, "o", color="orange")
+                ax2.set_xlabel("Stimulus")
+                ax2.set_ylabel("Proportion correct")
+                ax2.set_ylim(-0.05, 1.05)
+                ax2.set_title(f"Psychometric function — α={alpha:.2f}, β={beta:.2f}, γ={gamma:.2f}, λ={lambd:.3f}")
+                ax2.grid(alpha=0.2)
+                st.pyplot(fig2)
 
             st.markdown("---")
 
-            # --- Sliders BELOW the graph (they update session_state) ---
+            # Sliders + captions
             col1, col2 = st.columns([1, 1])
             with col1:
                 alpha_new = st.slider("Threshold (α)", -2.5, 2.5, float(alpha), step=0.01, key="psych_alpha_slider")
