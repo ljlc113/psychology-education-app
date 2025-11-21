@@ -377,7 +377,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
         elif st.session_state.econ_tab == "Expected Utility (EU)":
             st.subheader("Expected Utility (EU)")
             st.markdown(
-                "EU allows **nonlinear utility**, which EV does not consider. "
+                "EU allows **nonlinear utility**, which EV does not consider. However, note that **linear probability weighting** remains an assumption."
                 "We use a sign–power (CRRA-style) function that raises value to the power of α, "
                 "capturing diminishing sensitivity for gains and losses."
             )
