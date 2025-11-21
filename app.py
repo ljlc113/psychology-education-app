@@ -1,5 +1,7 @@
 # app.py
 import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
 
 # ----- Page / app config -----
 st.set_page_config(page_title="Cognition Educational App", layout="wide")
@@ -241,7 +243,6 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 
 # Economic Choices + Utility Curves page
 elif st.session_state.page == PAGE_ECONOMIC:
-    import numpy as np
     # ---------------------------------------
     # Helper utilities
     # ---------------------------------------
