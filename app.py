@@ -461,6 +461,8 @@ elif st.session_state.page == PAGE_ECONOMIC:
             st.markdown("For losses (when x is negative) it follows a convex asymptote shape which grows more quickly than for gains. The steepness is because of **loss aversion**; we 'value' a loss more than the equivalent reframed gain (e.g. 100% lose 10 vs. 20% lose 40). People are **risk seeking for losses**; prefer to gamble rather than take a confirmed loss. ")
             st.markdown("There are different shapes for the domain of losses and gains because prospect theory takes into account that human judgements differ when we frame things as 'wins' vs 'losses' - known as the **framing effect**.")
 
+            _show_eq("Value (reference-dependent)", r"v(x) = \begin{cases}(x-r)^{\alpha}, & x \ge r \\ -\lambda\, (r-x)^{\beta}, & x < r\end{cases}")
+
             st.subheader("Parameters")
             colA, colB = st.columns(2)
             with colA:
@@ -496,8 +498,6 @@ elif st.session_state.page == PAGE_ECONOMIC:
                 "Sliding λ left reduces the steepness of the loss side of the value function, while sliding right steepens it dramatically to amplify the psychological weight of losses. "
                 "In practice, higher λ means losses feel much more painful than equivalent gains, producing strong avoidance of sure losses and greater willingness to gamble to escape them."
                 )
-
-            _show_eq("Value (reference-dependent)", r"v(x) = \begin{cases}(x-r)^{\alpha}, & x \ge r \\ -\lambda\, (r-x)^{\beta}, & x < r\end{cases}")
 
             # Visuals
             col1, col2 = _two_cols()
