@@ -302,14 +302,14 @@ elif st.session_state.page == PAGE_ECONOMIC:
         if st.session_state.econ_tab == "Introduction":
             st.subheader("How do we make economic decisions?")
             st.markdown(
-    """
-- **Normative models** explain how people *should* decide if they're rational.
-  - *Example:* Expected Value (EV) theory says that when faced with uncertain outcomes, choose the option with the highest expected value.
-- **But people often violate EV predictions** and choose options that are not normatively optimal.
-- We are **risk-averse**, **loss-averse**, and **sensitive to framing**.
-- **Descriptive models** explain how people *actually* behave, often deviating from EV because of psychological biases.
-    """
-)
+                """
+            - **Normative models** explain how people *should* decide if they're rational.
+            - *Example:* Expected Value (EV) theory says that when faced with uncertain outcomes, choose the option with the highest expected value.
+            - **But people often violate EV predictions** and choose options that are not normatively optimal.
+            - We are **risk-averse**, **loss-averse**, and **sensitive to framing**.
+            - **Descriptive models** explain how people *actually* behave, often deviating from EV because of psychological biases.
+                """
+            )
 
             st.markdown("---")
 
@@ -781,18 +781,70 @@ elif st.session_state.page == PAGE_ECONOMIC:
                 )
 
 
-# Working Memory page
+# Working Memory page (replaced filler, with internal tabs: Introduction, Theory, Graph)
 elif st.session_state.page == PAGE_WORKING_MEMORY:
-    with right_col:
-        st.header(PAGE_WORKING_MEMORY)
-        st.write("Placeholder page for Working Memory content.")
-        st.write("Add span tasks, explanations, or demos here.")
-        st.divider()
+    # Ensure working memory sub-tab state exists and defaults to Introduction
+    if "working_tab" not in st.session_state:
+        st.session_state.working_tab = "Introduction"
 
+    # Left column: Home + working memory internal tabs
     with left_col:
         st.markdown("### Navigation")
         if st.button("Home", key="home_from_working"):
             go_to(PAGE_LANDING)
+
+        st.markdown("---")
+        st.markdown("### Working Memory")
+        options = ["Introduction", "Theory", "Graph"]
+        current = st.session_state.get("working_tab", "Introduction")
+        default_index = options.index(current) if current in options else 0
+        working_choice = st.radio("", options, index=default_index, key="working_radio")
+        st.session_state.working_tab = working_choice
+
+    # Right column: show content for the selected working-memory tab
+    with right_col:
+        st.header(PAGE_WORKING_MEMORY)
+
+        if st.session_state.working_tab == "Introduction":
+            st.subheader("Working Memory")
+            st.write(
+                "Working memory refers to the brain systems that temporarily hold and manipulate information for ongoing cognitive tasks. "
+                "This module explores conceptual models of how short-term information can be maintained and used for decisions and behaviour."
+            )
+            st.divider()
+
+        elif st.session_state.working_tab == "Theory":
+            st.subheader("Theory")
+            st.write(
+                "Brief theoretical overview: working memory can be supported by persistent neural activity or by transient changes in synaptic weights. "
+                "Models differ in whether information is stored actively via spiking, or silently via short-term synaptic plasticity and reactivation."
+            )
+            st.markdown("- **Persistent activity**: sustained firing keeps information online.")
+            st.markdown("- **Synaptic / activity-silent**: temporary synaptic changes store information without ongoing firing.")
+            st.divider()
+
+        elif st.session_state.working_tab == "Graph":
+            st.subheader("Graph")
+            st.write("Illustrative example: a simple timecourse showing a transient input, a maintenance period, and a readout.")
+            # small example plot (matplotlib)
+            t = np.linspace(0, 10, 400)
+            input_signal = np.exp(-0.5*(t-1.0)**2*4)  # transient input near t=1
+            maintenance = np.where((t > 2) & (t < 8), 0.3, 0.0)  # small maintained level (illustrative)
+            readout = np.exp(-0.5*(t-9.0)**2*6) * 0.8  # readout/transient at the end
+            combined = input_signal + maintenance + readout
+
+            fig, ax = plt.subplots(figsize=(6, 2.5))
+            ax.plot(t, combined, lw=2)
+            ax.fill_between(t, 0, combined, alpha=0.12)
+            ax.set_xlabel("Time (s)")
+            ax.set_ylabel("Activity (a.u.)")
+            ax.set_title("Example working-memory timecourse (illustrative)")
+            ax.axvspan(2, 8, color="gray", alpha=0.06, label="maintenance period")
+            ax.legend(loc="upper right")
+            st.pyplot(fig, clear_figure=True)
+
+        else:
+            st.error("Unknown working memory tab selected.")
 
 # Safety fallback (shouldn't trigger)
 else:
