@@ -571,6 +571,32 @@ elif st.session_state.page == PAGE_ECONOMIC:
                 - **Recurrent divisive normalization:** a form of divisive normalization in which the influence of each option is adjusted through **repeated feedback processes**, often giving more weight to options that receive more attention
                 - **Adaptive gain:** the brain **adjusts its sensitivity** to differences in value depending on which values are most relevant in the moment
             """)
+            import pandas as pd
+            data = {
+                "Normalization Model": [
+                    "Range Normalization",
+                    "Divisive Normalization",
+                    "Recurrent Divisive Normalization",
+                    "Adaptive Gain / Logistic Model"
+                ],
+                "Equation (as implemented)": [
+                    r"$f(v) = \dfrac{v}{\max(v) - \min(v)}$",
+                    r"$f(v) = \dfrac{v}{\text{mean}(v)}$",
+                    r"$f(v) = \dfrac{v}{v + \text{mean}(v)}$",
+                    r"$f(v) = \dfrac{1}{1 + \exp\big(-(v - \text{mean}(v)) \cdot \text{slope}\big)}$"
+                ],
+                "When to Use": [
+                    "Scales values by the observed range. Useful when absolute min/max bounds of options matter.",
+                    "Normalizes relative to the average. Good when choices are judged against the context mean.",
+                    "Adds recurrent suppression (self + mean). Captures competitive dynamics between options.",
+                    "Produces sigmoidal sensitivity around the context mean, with adjustable slope. Useful for adaptive gain and psychophysical modeling."
+                ]
+            }
+
+            df_norm = pd.DataFrame(data).set_index("Normalization Model")
+
+            # Display the table in Streamlit
+            st.table(df_norm)
 
 # Working Memory page
 elif st.session_state.page == PAGE_WORKING_MEMORY:
