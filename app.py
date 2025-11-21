@@ -611,7 +611,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
             # On-page inputs
             # -----------------------------
             st.header("Example: Restaurant prices")
-            st.caption("Interactive version of the Google Colab that compares the different normalization methods! Situation: imagine you're choosing  between restaurants with different prices. You can compare what happens when the restaurant group has a larger range, when the average prices tend to be lower vs. higher, and how that plays out with each normalization method.")
+            st.caption("Imagine you're choosing between a set of restaurants, each with different average prices. You can compare what happens when your restaurant group has a larger range, when the average prices overall tend to be cheaper vs. expensive, and how that scales with each normalization method.")
 
             def_v1 = "1 2 5 10"
             def_v2 = "1 5 9 10"
@@ -628,7 +628,10 @@ elif st.session_state.page == PAGE_ECONOMIC:
             with col_in3:
                 slope = st.slider("Adaptive gain slope k", 0.05, 2.0, 0.7, 0.05)
             with col_in4:
-                show_table = st.checkbox("Show numeric table", value=True)
+                st.markdown("""
+                **Graphically:** moving k left (smaller) makes the adaptive-gain sigmoid shallower so outputs change more gradually with value (less contrast around the mean); moving k right (larger) steepens the sigmoid so a small change around the group mean produces a large jump in the normalized output.
+                **Contextually:** a larger k means choices become highly sensitive to small differences near the contextual average (amplifying contrast between similar options), while a smaller k makes the decision-maker less context-sensitive and treats value differences more smoothly (reducing contrast effects).
+                 """)
 
             v1 = parse_array(v1_str)
             v2 = parse_array(v2_str)
