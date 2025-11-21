@@ -17,8 +17,8 @@ if "page" not in st.session_state:
     st.session_state.page = PAGE_LANDING
 
 # Ensure psychometrics tab state exists
-#if "psych_tab" not in st.session_state:
-    #st.session_state.psych_tab = "Introduction"
+if "psych_tab" not in st.session_state:
+    st.session_state.psych_tab = "Introduction"
 
 # persistent simulator parameters (used so sliders can appear below the plot)
 if "psych_alpha" not in st.session_state:
@@ -411,7 +411,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
                 st.latex(r"u(v) = (1 \text{ if } v\ge0 \text{ else } -1)\cdot |v|^{\alpha}")
                 xr = np.linspace(-100, 100, 400)
                 u_vals = np.array([(1 if v >= 0 else -1) * (abs(v) ** alpha) for v in xr], dtype=float)
-                _plot_simple(xr, u_vals, "Outcome v", "Utility u(v)", f"Utility (α={alpha:.2f})")
+                _plot_simple(xr, u_vals, "Outcome v", "Utility u(v)", f"Nonlinear utility (α={alpha:.2f})")
 
             with col_eq2:
                 st.latex(r"w(p) = p")
@@ -456,7 +456,70 @@ elif st.session_state.page == PAGE_ECONOMIC:
 
         elif st.session_state.econ_tab == "Prospect Theory (PT)":
             st.subheader("Prospect Theory (PT)")
-            st.write("Placeholder for Prospect Theory content.")
+            st.markdown("PT uses a **reference-dependent value function** and **nonlinear probability weighting** which EU does not consider. It has distinct domains with different functions for behaviors if they are considered a LOSS or GAIN. It stems from the idea that we have both internal subjective estimates of value AND probability.")
+            st.markdown(" For gains (when x is positive) it follows a compressed graph similar to that of expected utility (EU). This is due to people being **risk averse for gains**; we prefer to take confirmed gain than gamble.")
+            st.markdown("For losses (when x is negative) it follows a convex asymptote shape which grows more quickly than for gains. The steepness is because of **loss aversion**; we 'value' a loss more than the equivalent reframed gain (e.g. 100% lose 10 vs. 20% lose 40). ")
+            st.markdown("People are **risk seeking for losses**; prefer to gamble rather than take a confirmed loss. There are different shapes for the domain of losses and gains because prospect theory takes into account that human judgements differ when we frame things as 'wins' vs 'losses' - known as the **framing effect**.")
+
+            st.subheader("Parameters")
+            colA, colB = st.columns(2)
+            with colA:
+                alpha = st.slider("Curvature for gains (α)", 0.2, 1.5, 0.88, 0.02)
+                gamma = st.slider("Weighting (gains) γ", 0.2, 1.5, 0.61, 0.01)
+                ref = st.slider("Reference point r", -50.0, 50.0, 0.0, 1.0)
+            with colB:
+                beta = st.slider("Curvature for losses (β)", 0.2, 1.5, 0.88, 0.02)
+                delta = st.slider("Weighting (losses) δ", 0.2, 1.5, 0.69, 0.01)
+                lam = st.slider("Loss aversion λ", 0.5, 4.0, 2.25, 0.05)
+
+            _show_eq("Value (reference-dependent)", r"v(x) = \begin{cases}(x-r)^{\alpha}, & x \ge r \\ -\lambda\, (r-x)^{\beta}, & x < r\end{cases}")
+
+            # Visuals
+            col1, col2 = _two_cols()
+            with col1:
+                x = np.linspace(-100, 100, 500)
+                v = np.where(x >= ref, (x - ref) ** alpha, -lam * (ref - x) ** beta)
+                _plot_simple(x, v, "Outcome x", "Value v(x)", "Prospect Theory value function")
+
+            with col2:
+                p = np.linspace(0.001, 0.999, 400)
+                w_plus = p ** gamma / ( (p ** gamma + (1 - p) ** gamma) ** (1/gamma) )
+                w_minus = p ** delta / ( (p ** delta + (1 - p) ** delta) ** (1/delta) )
+                _plot_multi(p, [w_plus, w_minus], ["w₊(p) (gains)", "w₋(p) (losses)"], "Probability p", "Weight", "Probability weighting (TK-1992)")
+
+            st.divider()
+            st.subheader("Worked examples (PT)")
+
+            def v_fn(x):
+                x = np.asarray(x, dtype=float)
+                return np.where(x >= ref, (x - ref) ** alpha, -lam * (ref - x) ** beta)
+
+            def w_plus_fn(p):
+                p = np.asarray(p, dtype=float)
+                return p ** gamma / ((p ** gamma + (1 - p) ** gamma) ** (1 / gamma))
+
+            def w_minus_fn(p):
+                p = np.asarray(p, dtype=float)
+                return p ** delta / ((p ** delta + (1 - p) ** delta) ** (1 / delta))
+
+            # Example 1: 0.01% to win 100,000; else 0
+            p1 = 0.0001
+            PT1 = w_plus_fn(p1) * v_fn(100_000.0) + w_minus_fn(1 - p1) * v_fn(0.0)
+
+            # Example 2: 50% +55, 50% -50
+            p2 = 0.5
+            PT2 = w_plus_fn(p2) * v_fn(55.0) + w_minus_fn(1 - p2) * v_fn(-50.0)
+
+            colA, colB = st.columns(2)
+            with colA:
+                st.markdown("**Lottery ticket:** 0.01% chance to win 100,000")
+                st.latex(r"\\mathrm{PT} = w_+(0.0001)\,v(100{,}000) + w_-(0.9999)\,v(0)")
+                st.metric("PT value (utils)", f"{PT1:.3g}")
+            with colB:
+                st.markdown("**50–50 gamble:** +55 / −50")
+                st.latex(r"\\mathrm{PT} = w_+(0.5)\,v(55) + w_-(0.5)\,v(-50)")
+                st.metric("PT value (utils)", f"{PT2:.3g}")
+
 
         elif st.session_state.econ_tab == "Normalization":
             st.subheader("Normalization Models")
