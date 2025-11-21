@@ -562,7 +562,15 @@ elif st.session_state.page == PAGE_ECONOMIC:
 
         elif st.session_state.econ_tab == "Normalization":
             st.subheader("Normalization Models")
-            st.write("Placeholder for normalization models content.")
+            st.markdown("""
+                **Normalization** in economic decision-making refers to the process by which the brain **adjusts the subjective value of an option based on the context of other available options.** Instead of evaluating an option in absolute terms, the brain scales or normalizes its value relative to the values around it.
+                - **Range Normalization:** the subjective value of an option is scaled relative to the **range** (min-max) of values in the current choice set
+                  - When the range of available values is large, differences between options shrink in subjective space
+                  - When the range is small, the same objective difference is perceived as larger
+                - **Divisive normalization:** the subjective value of an option is **reduced by the overall value of the other options** in the choice set (an option looks less valuable when it is surrounded by higher-value alternatives)
+                - **Recurrent divisive normalization:** a form of divisive normalization in which the influence of each option is adjusted through **repeated feedback processes**, often giving more weight to options that receive more attention
+                - **Adaptive gain:** the brain **adjusts its sensitivity** to differences in value depending on which values are most relevant in the moment
+            """)
 
 # Working Memory page
 elif st.session_state.page == PAGE_WORKING_MEMORY:
