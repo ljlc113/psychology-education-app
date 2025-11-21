@@ -195,7 +195,7 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
                 p_true = psychometric_fn(stim_levels, alpha_new, beta_new, gamma_new, lambda_new)
                 successes = rng.binomial(ntrials_new, p_true)
                 st.session_state.psych_sim_data = {"stim": stim_levels, "successes": successes, "trials": np.full_like(successes, ntrials_new)}
-                st.experimental_rerun()
+                st.success("Simulated new dataset.")
 
             st.divider()
             if st.button("← Back to landing", key="back_from_psych_sim"):
