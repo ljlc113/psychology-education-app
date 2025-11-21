@@ -100,8 +100,6 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
             st.subheader("Psychometrics")
             st.write("Psychometrics examines the relationship between stimulus properties and behavioral responses, using curves and statistical models to quantify perception and decision thresholds.")
             st.divider()
-            if st.button("← Back to landing", key="back_from_psych_intro"):
-                go_to(PAGE_LANDING)
 
         elif st.session_state.psych_tab == "Default Example":
             st.subheader("See a psychometric function interpreted in the context of a study")
@@ -134,8 +132,6 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 """)
 
             st.divider()
-            if st.button("← Back to landing", key="back_from_psych_default"):
-                go_to(PAGE_LANDING)
 
         else:
             st.subheader("Simulator: Psychometric function & simulated data")
@@ -241,19 +237,26 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
                 st.success("Simulated new dataset.")
 
             st.divider()
-            if st.button("← Back to landing", key="back_from_psych_sim"):
-                go_to(PAGE_LANDING)
+
 
 # Economic Choices + Utility Curves page
 elif st.session_state.page == PAGE_ECONOMIC:
     # Left column: econ navigation tabs
     with left_col:
         st.markdown("### Navigation")
-        econ_tabs = ["Introduction", "Expected Value (EV)", "Expected Utility (EU)", "Prospect Theory (PT)", "Normalization"]
+        if st.button("Home", key="home_from_econ"):
+            go_to(PAGE_LANDING)
+
+        st.markdown("---")
+        econ_tabs = ["Introduction", "Expected Value (EV)", "Expected Utility (EU)", 
+                     "Prospect Theory (PT)", "Normalization"]
+
         if "econ_tab" not in st.session_state:
             st.session_state.econ_tab = "Introduction"
+
         current_econ = st.session_state.econ_tab
         default_econ_idx = econ_tabs.index(current_econ) if current_econ in econ_tabs else 0
+
         econ_choice = st.radio("", econ_tabs, index=default_econ_idx, key="econ_radio")
         st.session_state.econ_tab = econ_choice
 
@@ -315,8 +318,6 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
         st.write("Placeholder page for Working Memory content.")
         st.write("Add span tasks, explanations, or demos here.")
         st.divider()
-        if st.button("← Back to landing", key="back_from_working"):
-            go_to(PAGE_LANDING)
 
     with left_col:
         st.markdown("### Navigation")
