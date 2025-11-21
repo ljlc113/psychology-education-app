@@ -241,6 +241,37 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 
 # Economic Choices + Utility Curves page
 elif st.session_state.page == PAGE_ECONOMIC:
+    # ---------------------------------------
+    # Helper utilities
+    # ---------------------------------------
+    def _two_cols():
+        return st.columns(2)
+
+
+    def _show_eq(title: str, latex: str):
+        st.markdown(f"### {title}")
+        st.latex(latex)
+
+
+    def _plot_simple(x, y, xlabel, ylabel, title):
+        fig, ax = plt.subplots()
+        ax.plot(x, y)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        st.pyplot(fig, clear_figure=True)
+
+
+    def _plot_multi(x, ys, labels, xlabel, ylabel, title):
+        fig, ax = plt.subplots()
+        for y, lab in zip(ys, labels):
+            ax.plot(x, y, label=lab)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.legend()
+        st.pyplot(fig, clear_figure=True)
+
     # Left column: econ navigation tabs
     with left_col:
         st.markdown("### Navigation")
