@@ -16,7 +16,7 @@ if "page" not in st.session_state:
 
 # Ensure psychometrics tab state exists
 if "psych_tab" not in st.session_state:
-    st.session_state.psych_tab = "Default Example"
+    st.session_state.psych_tab = "Introduction"
 
 # persistent simulator parameters (used so sliders can appear below the plot)
 if "psych_alpha" not in st.session_state:
@@ -265,14 +265,14 @@ elif st.session_state.page == PAGE_ECONOMIC:
         if st.session_state.econ_tab == "Introduction":
             st.subheader("How do we make economic decisions?")
             st.markdown(
-                """
+    """
 - **Normative models** explain how people *should* decide if they're rational.
-- *Example:* Expected Value (EV) theory says that when faced with uncertain outcomes, you should choose the option with the highest expected value.
+  - *Example:* Expected Value (EV) theory says that when faced with uncertain outcomes, you should choose the option with the highest expected value.
 - **But people often violate EV predictions** and choose options that are not normatively optimal.
 - We are **risk-averse**, **loss-averse**, and **sensitive to framing**.
 - **Descriptive models** explain how people *actually* behave, often deviating from EV because of psychological biases.
-                """
-            )
+    """
+)
 
             st.markdown("---")
 
@@ -280,11 +280,9 @@ elif st.session_state.page == PAGE_ECONOMIC:
             st.subheader("Decision Models")
             st.markdown(
                 """
-**Expected Value (EV):** linear utility, linear probability.
-
-**Expected Utility (EU):** nonlinear utility over outcomes.
-
-**Prospect Theory (PT):** reference-dependent value and nonlinear probability weighting.
+- **Expected Value (EV):** linear utility, linear probability.
+- **Expected Utility (EU):** nonlinear utility over outcomes.
+- **Prospect Theory (PT):** reference-dependent value and nonlinear probability weighting.
 
 **Normalization techniques (applied in a choosing restaurants example):**
 
