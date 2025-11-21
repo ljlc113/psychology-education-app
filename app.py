@@ -99,31 +99,30 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
             st.subheader("Perimetric sensitivity and response variability in glaucoma (Miranda & Henson, 2008)")
 
             st.write(
-                "This study examined how reliably people with glaucoma detect small flashes of light at different brightness levels. It compared two testing methods to see how sensitivity and consistency changed across locations in the visual field."
+                "This study looked at how reliably people with glaucoma detected brief flashes of light of different brightness. It compared two testing methods to see which gave more consistent and sensitive results across parts of the visual field."
             )
 
             st.markdown(
                 "**Method.** A flash of light of variable intensity was presented repeatedly at a fixed location in the visual field of a subject who reported whether the flash was visible. There were 3–20 trials at each stimulus level."
             )
 
-            import streamlit as st
+            # display the actual study figure uploaded by the user
             st.image("/mnt/data/693b4dce-bc9f-4860-826d-f6a1ebe56075.png", caption="Examples of psychometric data from Miranda & Henson (2008)")
 
             st.write(
-                "These curves show how the probability of seeing a flash changes with stimulus intensity for four different visual-field locations. The two testing methods generally agree, but in some cases they differ in sensitivity or consistency, especially at locations affected by glaucoma."
+                "These plots show how the probability of seeing a flash changes with its brightness for four example locations. In some cases the two testing methods agree closely, while in others one method shows lower sensitivity or more variability."
             )
 
             st.markdown("---")
 
-            st.markdown(
-                "| **Feature** | **Interpretation (max 2 sentences)** |
-                 |-----------|---------------------------------------------|
-                 | **Threshold (α)** | The threshold marks the stimulus intensity where the observer begins to reliably detect the flash. In glaucoma, higher thresholds reflect reduced sensitivity at that location. |
-                 | **Slope (β)** | The slope indicates how quickly detection improves as intensity increases. Steeper slopes mean responses are more consistent and less variable. |
-                 | **Guess rate (γ)** | The guess rate reflects the baseline probability of reporting a flash when it is too dim to see. It is usually low in this task and relates to response bias. |
-                 | **Lapse rate (λ)** | The lapse rate captures occasional misses even at bright intensities. These lapses can reflect momentary inattention or blinking and reduce the maximum performance. |",
-                unsafe_allow_html=True,
-            )
+            st.markdown("""
+| **Feature**        | **Interpretation (max 2 sentences)** |
+|-------------------|----------------------------------------|
+| **Threshold (α)** | The threshold marks the stimulus intensity where the observer begins to reliably detect the flash. In glaucoma, higher thresholds reflect reduced sensitivity at that location. |
+| **Slope (β)**     | The slope indicates how quickly detection improves as intensity increases. Steeper slopes mean responses are more consistent and less variable. |
+| **Guess rate (γ)**| The guess rate reflects the baseline probability of reporting a flash when it is too dim to see. It is usually low in this task and relates to response bias. |
+| **Lapse rate (λ)**| The lapse rate captures occasional misses even at bright intensities. These lapses can reflect momentary inattention or blinking and reduce the maximum performance. |
+""")
 
             st.divider()
             if st.button("← Back to landing", key="back_from_psych_default"):
