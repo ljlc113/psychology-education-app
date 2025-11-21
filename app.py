@@ -248,6 +248,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
             go_to(PAGE_LANDING)
 
         st.markdown("---")
+        st.markdown("### Economic Choices + Utility Curves")
         econ_tabs = ["Introduction", "Expected Value (EV)", "Expected Utility (EU)", 
                      "Prospect Theory (PT)", "Normalization"]
 
