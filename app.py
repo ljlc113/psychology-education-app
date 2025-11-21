@@ -283,22 +283,62 @@ elif st.session_state.page == PAGE_ECONOMIC:
             st.subheader("Decision Models")
             st.markdown(
                 """
-- **Expected Value (EV):** linear utility, linear probability.
-- **Expected Utility (EU):** nonlinear utility over outcomes.
-- **Prospect Theory (PT):** reference-dependent value and nonlinear probability weighting.
+            - **Expected Value (EV):** linear utility, linear probability.
+            - **Expected Utility (EU):** nonlinear utility over outcomes.
+            - **Prospect Theory (PT):** reference-dependent value and nonlinear probability weighting.
 
-**Normalization techniques (applied in a choosing restaurants example):**
+            **Normalization techniques (applied in a choosing restaurants example):**
 
-- **Range normalization** → linear scaling, sensitive to min and max.
-- **Divisive normalization** → relative to the mean, not bounded.
-- **Recurrent divisive normalization** → bounded, compresses large values.
-- **Adaptive gain / logistic value** → nonlinear, highlights contrasts around the mean.
+            - **Range normalization** → linear scaling, sensitive to min and max.
+            - **Divisive normalization** → relative to the mean, not bounded.
+            - **Recurrent divisive normalization** → bounded, compresses large values.
+            - **Adaptive gain / logistic value** → nonlinear, highlights contrasts around the mean.
                 """
             )
 
         elif st.session_state.econ_tab == "Expected Value (EV)":
-            st.subheader("Expected Value (EV)")
-            st.write("Placeholder for EV content.")
+                st.subheader("Expected Value (EV)")
+                st.markdown("EV assumes **linear utility** and **linear probability weighting**. It is computed by multiplying the value of an outcome by its probability.")
+
+                _show_eq("EV of two-outcome lottery, where v1 = probability p and v2 = probability 1-p", r"EV = p \times v_1 + (1 - p) \times v_2")
+
+                st.divider()
+                st.subheader("Worked examples")
+                # Example 1: Lottery ticket .01% chance to win 100,000
+                p1 = 0.0001
+                v1_1, v2_1 = 100_000.0, 0.0
+                ev1 = p1 * v1_1 + (1 - p1) * v2_1
+
+                # Example 2: 50% chance +55, 50% chance -50
+                p2 = 0.5
+                v1_2, v2_2 = 55.0, -50.0
+                ev2 = p2 * v1_2 + (1 - p2) * v2_2
+
+                colA, colB = st.columns(2)
+                with colA:
+                    st.markdown("**Lottery ticket:** 0.01% chance to win 100,000; otherwise 0")
+                    st.latex(r"\\mathrm{EV} = 0.0001 \times 100{,}000 + 0.9999 \times 0 = 10")
+                    st.metric("EV", f"{ev1:.2f}")
+                    st.markdown("**What does this mean?** You should pursue this gamble, if the ticket costs less than 10 dollars.")
+                with colB:
+                    st.markdown("**50–50 gamble:** +55 with 50%, −50 with 50%")
+                    st.latex(r"\\mathrm{EV} = 0.5 \times 55 + 0.5 \times (-50) = 2.5")
+                    st.metric("EV", f"{ev2:.2f}")
+                    st.markdown("**What does this mean?** You should pursue this gamble, because expected value is positive.")
+
+                st.divider()
+                st.subheader("Graphics of EV utility and probability weighting functions:")
+            # Utility and probability equations with their graphs side by side
+                col1, col2 = _two_cols()
+                with col1:
+                    st.latex(r"u(x) = x")
+                    xr = np.linspace(-100, 100, 400)
+                    _plot_simple(xr, xr, "Outcome x", "Utility u(x)", "Linear utility: u(x)=x")
+
+                with col2:
+                    st.latex(r"w(p) = p")
+                    pr = np.linspace(0, 1, 200)
+                    _plot_simple(pr, pr, "Probability p", "Weight w(p)", "Identity weighting: w(p)=p")
 
         elif st.session_state.econ_tab == "Expected Utility (EU)":
             st.subheader("Expected Utility (EU)")
