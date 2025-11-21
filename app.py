@@ -201,12 +201,21 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
             col1, col2 = st.columns([1, 1])
             with col1:
                 alpha_new = st.slider("Threshold (α)", -2.5, 2.5, float(alpha), step=0.01, key="psych_alpha_slider")
+                st.caption("Sliding left lowers the threshold, shifting the curve leftward and making the stimulus easier to detect; sliding right raises the threshold, shifting the curve rightward and indicating reduced sensitivity.")
+                st.caption("In the Default Example, higher α reflected reduced sensitivity at affected visual-field locations.")
                 beta_new = st.slider("Slope (β)", 0.1, 10.0, float(beta), step=0.1, key="psych_beta_slider")
+                st.caption("Sliding left makes the curve shallower, increasing variability in responses; sliding right steepens the curve, making performance rise more abruptly.")
+                st.caption("In the Default Example, steeper β meant more consistent detection and reduced variability.")
             with col2:
                 gamma_new = st.slider("Guess rate (γ)", 0.0, 0.5, float(gamma), step=0.01, key="psych_gamma_slider")
+                st.caption("Sliding left lowers the baseline probability of responding ‘seen’ when the flash is very dim; sliding right raises this baseline, mimicking more guessing or bias.")
+                st.caption("In the Default Example, γ was low because observers rarely guessed when the flash was undetectable.")
                 lambda_new = st.slider("Lapse rate (λ)", 0.0, 0.2, float(lambd), step=0.005, key="psych_lambda_slider")
+                st.caption("Sliding left reduces lapses, allowing the curve to reach closer to 1.0 at high intensities; sliding right increases lapses, lowering the top of the curve.")
+                st.caption("In the Default Example, non-zero λ reflected occasional misses even for bright stimuli.")
 
             ntrials_new = st.slider("Trials per stimulus", 1, 500, int(ntrials), step=1, key="psych_ntrials_slider")
+            st.caption("Sliding left reduces the number of trials and increases noise in the observed proportions; sliding right provides more trials and smoother estimates.")
 
             # Persist new values so the plot uses them on the next rerun
             st.session_state.psych_alpha = alpha_new
