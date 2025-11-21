@@ -629,11 +629,10 @@ elif st.session_state.page == PAGE_ECONOMIC:
                 slope = st.slider("Adaptive gain slope k", 0.05, 2.0, 0.7, 0.05)
                 st.caption(
                     "Moving k left (smaller) makes the adaptive-gain sigmoid shallower so outputs change more gradually with value (less contrast around the mean); moving k right (larger) steepens the sigmoid so a small change around the group mean produces a large jump in the normalized output. "
-                    "Contextually, a larger k means choices become highly sensitive to small differences near the contextual average (amplifying contrast between similar options), while a smaller k makes the decision-maker less context-sensitive and treats value differences more smoothly (reducing contrast effects)."
                     )
             with col_in4:
                 st.markdown("""
-                    hi :)                
+                    Contextually, a larger k means choices become highly sensitive to small differences near the contextual average (amplifying contrast between similar options), while a smaller k makes the decision-maker less context-sensitive and treats value differences more smoothly (reducing contrast effects).              
                 """)
 
             v1 = parse_array(v1_str)
