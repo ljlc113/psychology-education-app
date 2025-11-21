@@ -50,8 +50,7 @@ def render_landing_left():
     st.markdown("### Menu")
     # Use individual buttons with on_click callbacks to persist navigation
     if st.button(PAGE_PSYCHOMETRICS, key="btn_psychometrics"):
-        # when entering the Psychometrics section from landing, default to Default Example
-        st.session_state.psych_tab = "Default Example"
+        st.session_state.psych_tab = "Introduction"
         go_to(PAGE_PSYCHOMETRICS)
     if st.button(PAGE_ECONOMIC, key="btn_economic"):
         go_to(PAGE_ECONOMIC)
@@ -267,7 +266,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
             st.markdown(
     """
 - **Normative models** explain how people *should* decide if they're rational.
-  - *Example:* Expected Value (EV) theory says that when faced with uncertain outcomes, you should choose the option with the highest expected value.
+  - *Example:* Expected Value (EV) theory says that when faced with uncertain outcomes, choose the option with the highest expected value.
 - **But people often violate EV predictions** and choose options that are not normatively optimal.
 - We are **risk-averse**, **loss-averse**, and **sensitive to framing**.
 - **Descriptive models** explain how people *actually* behave, often deviating from EV because of psychological biases.
