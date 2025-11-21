@@ -176,25 +176,24 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
                 sim_data = {"stim": stim_levels, "successes": counts, "trials": np.full_like(counts, ntrials)}
                 st.session_state.psych_sim_data = sim_data
 
-            # Plot
-            fig, ax = plt.subplots(figsize=(8, 4))
-            ax.plot(x, y, lw=2, label="Psychometric curve")
+            # Interactive Plot using Plotly with hover tooltips for simulated points
+            import plotly.graph_objects as go
 
-            # plot simulated data points (proportion correct) with error bars
-            stim = np.array(st.session_state.psych_sim_data["stim"])
-            succ = np.array(st.session_state.psych_sim_data["successes"])
-            trials = np.array(st.session_state.psych_sim_data["trials"])
+            stim = np.array(st.session_state.psych_sim_data["stim"]) if st.session_state.psych_sim_data is not None else stim_levels
+            succ = np.array(st.session_state.psych_sim_data["successes"]) if st.session_state.psych_sim_data is not None else (psychometric_fn(stim, alpha, beta, gamma, lambd) * ntrials).astype(int)
+            trials = np.array(st.session_state.psych_sim_data["trials"]) if st.session_state.psych_sim_data is not None else np.full_like(succ, ntrials)
             prop_obs = succ / trials
-            ax.plot(stim, prop_obs, 'o', label="Simulated data")
 
-            ax.set_xlabel("Stimulus")
-            ax.set_ylabel("Proportion correct")
-            ax.set_ylim(-0.05, 1.05)
-            ax.set_title(f"Psychometric function — α={alpha:.2f}, β={beta:.2f}, γ={gamma:.2f}, λ={lambd:.3f}")
-            ax.grid(alpha=0.2)
-            ax.legend()
+            fig = go.Figure()
+            # psychometric curve
+            fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Psychometric curve'))
+            # simulated data points with hovertemplate
+            hover_tmpl = "This is a trial where stimulus intensity is %{x:.2f} and proportion correct is %{y:.2f}<extra></extra>"
+            fig.add_trace(go.Scatter(x=stim, y=prop_obs, mode='markers', name='Simulated data', marker=dict(color='orange', size=10), hovertemplate=hover_tmpl))
 
-            st.pyplot(fig)
+            fig.update_layout(xaxis_title='Stimulus', yaxis_title='Proportion correct', yaxis=dict(range=[-0.05, 1.05]), title=f"Psychometric function — α={alpha:.2f}, β={beta:.2f}, γ={gamma:.2f}, λ={lambd:.3f}")
+
+            st.plotly_chart(fig, use_container_width=True)
 
             st.markdown("---")
 
