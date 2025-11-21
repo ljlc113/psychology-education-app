@@ -807,15 +807,6 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
 
         if st.session_state.working_tab == "Introduction":
             st.subheader("Introduction")
-            st.write(
-                "Working memory refers to the brain systems that temporarily hold and manipulate information for ongoing cognitive tasks. "
-                "This module explores conceptual models of how short-term information can be maintained and used for decisions and behaviour."
-            )
-            st.divider()
-
-        elif st.session_state.working_tab == "Theory":
-            st.subheader("Theory")
-
             st.markdown("""
                 Working memory is the system that allows us to temporarily hold and manipulate information,  
                 such as remembering a phone number long enough to type it.
@@ -841,29 +832,152 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
                 - These strengthened synapses can hold information **silently**, without ongoing neural spikes  
                 - Later, a small nonspecific input can reactivate the same network, producing a brief burst of activity that **retrieves the stored item**
                 """)
+            st.divider()
 
+        elif st.session_state.working_tab == "Theory":
+            st.subheader("Theory")
+            st.header("Equations (Short-term facilitation / depression)")
+            st.latex(r"\frac{dx}{dt} = \frac{1-x}{\tau_D} - u\,x\,\delta(t-t_{sp})")
+            st.latex(r"\frac{du}{dt} = \frac{U - u}{\tau_F} + U(1-u)\,\delta(t-t_{sp})")
+            st.markdown(
+                """
+        - `x(t)` = fraction of available vesicles (decreases at spikes, recovers with time constant `τ_D`).
+        - `u(t)` = utilization / release probability (jumps at spikes, decays slowly with `τ_F`).
+        - `δ(t-t_{sp})` indicates instantaneous jumps at presynaptic spike times.
+        - Synaptic efficacy is proportional to `u(t)·x(t)`, and it influences the postsynaptic membrane potential.
+        """
+            )
+
+            st.header("Explanation (step-by-step)")
+            st.markdown(
+                """
+        **Encoding (presynaptic spike train):** each spike causes  
+        - an increase in `u` (facilitation) because of residual Ca²⁺, and  
+        - a decrease in `x` (vesicle use).  
+
+        **During the train:** if `u` grows faster than `x` falls, the synapse becomes *facilitated* (postsynaptic responses grow). If `x` becomes heavily depleted, you see net depression.
+
+        **Between spikes:** `x` recovers with τ_D (time constant depressing, ~0.2 s in the paper) while `u` decays slowly with τ_F (time constant facilitating, ~1.5 s). Because `u` decays slowly, information can be stored in elevated `u` for ~1 s without persistent spiking (activity-silent WM).
+        """
+            )
             st.divider()
 
 
         elif st.session_state.working_tab == "Graph":
             st.subheader("Graph")
-            st.write("Illustrative example: a simple timecourse showing a transient input, a maintenance period, and a readout.")
-            # small example plot (matplotlib)
-            t = np.linspace(0, 10, 400)
-            input_signal = np.exp(-0.5*(t-1.0)**2*4)  # transient input near t=1
-            maintenance = np.where((t > 2) & (t < 8), 0.3, 0.0)  # small maintained level (illustrative)
-            readout = np.exp(-0.5*(t-9.0)**2*6) * 0.8  # readout/transient at the end
-            combined = input_signal + maintenance + readout
 
-            fig, ax = plt.subplots(figsize=(6, 2.5))
-            ax.plot(t, combined, lw=2)
-            ax.fill_between(t, 0, combined, alpha=0.12)
-            ax.set_xlabel("Time (s)")
-            ax.set_ylabel("Activity (a.u.)")
-            ax.set_title("Example working-memory timecourse (illustrative)")
-            ax.axvspan(2, 8, color="gray", alpha=0.06, label="maintenance period")
-            ax.legend(loc="upper right")
-            st.pyplot(fig, clear_figure=True)
+            import streamlit as st
+            import numpy as np
+            import plotly.graph_objects as go
+
+            def simulate_u_x(time, spike_times, U=0.3, tau_D=0.2, tau_F=1.5, dt=0.001):
+                """
+                Simulate u(t) and x(t) using the Mongillo et al. (2008) model.
+                time : 1D array of times (s)
+                spike_times : iterable of spike times (s)
+                Returns u, x, J_eff arrays aligned with time
+                """
+                n = time.size
+                u = np.zeros(n)
+                x = np.zeros(n)
+                u_val = U
+                x_val = 1.0
+                exp_F = np.exp(-dt / tau_F)
+                exp_D = np.exp(-dt / tau_D)
+
+                spike_idx = set(int(np.round(t / dt)) for t in spike_times if t >= time[0] and t <= time[-1])
+                for i, t in enumerate(time):
+                    if i in spike_idx:
+                        # spike occurs
+                        u_val = u_val + U * (1.0 - u_val)
+                        x_val = x_val * (1.0 - u_val)
+                    # store
+                    u[i] = u_val
+                    x[i] = x_val
+                    # relax between spikes
+                    u_val = U + (u_val - U) * exp_F
+                    x_val = 1.0 - (1.0 - x_val) * exp_D
+
+                J_eff = u * x
+                return u, x, J_eff
+            
+            st.header("Interactive demo — u(t), x(t) and J_eff = u·x")
+            st.markdown("Adjust the parameters and spike pattern to see how facilitation and depression interact.")
+
+            # interactive controls
+            col1, col2, col3 = st.columns([1,1,1])
+            with col1:
+                U_val = st.slider("U (per-spike increment)", min_value=0.05, max_value=0.6, value=0.30, step=0.01)
+                tau_D = st.slider("τ_D (s)", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
+            with col2:
+                tau_F = st.slider("τ_F (s)", min_value=0.2, max_value=3.0, value=1.5, step=0.1)
+                dt = 0.001
+            with col3:
+                # pre-defined spike patterns and custom box
+                pattern = st.selectbox("Spike pattern", options=["Burst (5 spikes @ 50 Hz)","Single spike","Poisson (rate 20 Hz)","Manual times"])
+                if pattern == "Manual times":
+                    manual = st.text_input("Enter spike times (s), comma-separated", value="0.05,0.06,0.07")
+                    try:
+                        spike_times = [float(s.strip()) for s in manual.split(",") if s.strip()!='']
+                    except Exception:
+                        spike_times = [0.05,0.06,0.07]
+                else:
+                    spike_times = None
+
+            # construct time vector and spike times
+            T = 1.0  # 1 second demo
+            time = np.arange(0.0, T + dt/2, dt)
+
+            if pattern == "Burst (5 spikes @ 50 Hz)":
+                base = 0.05
+                spike_times = [base + k*(1/50.0) for k in range(5)]
+            elif pattern == "Single spike":
+                spike_times = [0.05]
+            elif pattern == "Poisson (rate 20 Hz)":
+                rng = np.random.default_rng(42)
+                rate = 20.0
+                # generate Poisson spike train converted to event times
+                p = rate * dt
+                spikes = rng.random(time.size) < p
+                spike_times = list(time[spikes])
+            # otherwise manual handled above
+
+            # simulate
+            u, x, J = simulate_u_x(time, spike_times, U=U_val, tau_D=tau_D, tau_F=tau_F, dt=dt)
+
+            # Build Plotly figure
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=time, y=u, mode="lines", name="u(t)", line=dict(color="royalblue")))
+            fig.add_trace(go.Scatter(x=time, y=x, mode="lines", name="x(t)", line=dict(color="crimson")))
+            fig.add_trace(go.Scatter(x=time, y=J, mode="lines", name="J_eff = u·x", line=dict(color="black")))
+
+            # overlay spike markers
+            fig.add_trace(go.Scatter(x=spike_times, y=[1.02]*len(spike_times), mode="markers", marker=dict(size=8, color="black"), name="spikes", hoverinfo="x"))
+
+            fig.update_layout(
+                height=420,
+                xaxis_title="Time (s)",
+                yaxis_title="u, x, J_eff (arb. units)",
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.0),
+                margin=dict(l=40, r=10, t=30, b=40)
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            # show numeric summary and interpretation
+            st.markdown("**Interpretation**")
+            st.markdown(
+                f"""
+        - Peak `u` after the burst: **{u.max():.3f}**  
+        - Minimum `x` during burst: **{x.min():.3f}**  
+        - Peak `J_eff` during the trial: **{J.max():.3f}**  
+
+        If `u` increases sufficiently and `x` doesn't deplete too much, `J_eff` can increase during a brief stimulus — that's facilitation. If `x` is strongly depleted, `J_eff` will fall (depression dominates).
+        """
+            )
+
+            st.markdown("---")
+            st.markdown("If you want this same explanation added as a static second page (e.g., a printable/markdown page) or integrated into your existing multi-page selector, tell me where your current page selector lives in `app.py` and I will provide a one-line patch you can paste in.")
+
 
         else:
             st.error("Unknown working memory tab selected.")
