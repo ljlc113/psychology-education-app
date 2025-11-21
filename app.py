@@ -376,24 +376,27 @@ elif st.session_state.page == PAGE_ECONOMIC:
 
         elif st.session_state.econ_tab == "Expected Utility (EU)":
             st.subheader("Expected Utility (EU)")
-            # -----------------------------
-            # 2. Explanation
-            # -----------------------------
             st.markdown(
                 "EU allows **nonlinear utility**, which EV does not consider. "
                 "We use a sign–power (CRRA-style) function that raises value to the power of α, "
                 "capturing diminishing sensitivity for gains and losses."
             )
-
-            # -----------------------------
-            # 3. Formatted equation
-            # -----------------------------
             st.latex(r"EU(v) = \operatorname{sign}(v)\,|v|^{\alpha}")
 
             # -----------------------------
             # 4. Slider for curvature
             # -----------------------------
             alpha = st.slider("Curvature α", 0.2, 2.0, 0.8, 0.05)
+
+            st.caption(
+                "Sliding left (lower α) makes the utility curve more pronouncedly curved, meaning outcomes grow in subjective value more slowly; "
+                "sliding right (higher α) straightens the curve so large outcomes grow in utility more quickly."
+            )
+            st.caption(
+                "When curvature exceeds 1, the function becomes convex for positive outcomes—this means the decision-maker becomes risk-seeking in the gain domain, "
+                "valuing large gains disproportionately more than small ones."
+            )
+
 
             st.divider()
 
