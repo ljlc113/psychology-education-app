@@ -96,8 +96,76 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
         st.header(PAGE_PSYCHOMETRICS)
 
         if st.session_state.psych_tab == "Default Example":
-            st.subheader("Default Example")
-            st.write("This is a placeholder for the Default Example. Add explanatory text, examples, or starter visuals here.")
+            # Title: concise study title
+            st.subheader("Perimetric sensitivity and response variability in glaucoma (Miranda & Henson, 2008)")
+
+            # Two-sentence brief introduction
+            st.write(
+                "Miranda & Henson (2008) compared single-stimulus automated perimetry with multiple-stimulus perimetry to evaluate sensitivity and response variability in glaucoma patients. The study measured detection responses across a range of stimulus intensities at fixed visual-field locations to characterise psychometric performance."
+            )
+
+            # Method statement required by user
+            st.markdown(
+                "**Method.** A flash of light of variable intensity was presented repeatedly at a fixed location in the visual field of a subject who reported whether the flash was visible. There were 3–20 trials at each stimulus level."
+            )
+
+            # Citation / source note (using uploaded file reference)
+            st.markdown("*Source example and details adapted from the example material.* fileciteturn0file0", unsafe_allow_html=True)
+
+            # Static image of the psychometric curve from results: generate a representative curve
+            import numpy as np
+            import matplotlib.pyplot as plt
+            from math import erf
+
+            def Phi_scalar(z):
+                from math import erf as _erf
+                return 0.5 * (1 + _erf(z / np.sqrt(2)))
+
+            # Use representative parameters inspired by typical perimetry results
+            alpha_rep = 0.0
+            beta_rep = 3.0
+            gamma_rep = 0.02
+            lambda_rep = 0.02
+
+            x_plot = np.linspace(-3, 3, 300)
+            y_plot = gamma_rep + (1 - gamma_rep - lambda_rep) * np.array([Phi_scalar((xi - alpha_rep) * beta_rep) for xi in x_plot])
+
+            fig_rep, ax_rep = plt.subplots(figsize=(7, 3.5))
+            ax_rep.plot(x_plot, y_plot, lw=2)
+            ax_rep.set_xlabel("Stimulus intensity (a.u.)")
+            ax_rep.set_ylabel("Proportion seen")
+            ax_rep.set_ylim(-0.02, 1.02)
+            ax_rep.set_title("Representative psychometric curve (Miranda & Henson — illustrative)")
+            ax_rep.grid(alpha=0.2)
+            st.pyplot(fig_rep)
+
+            st.markdown("---")
+
+            # Table mapping study results onto psychometric curve features
+            import pandas as pd
+
+            rows = [
+                (
+                    "Threshold (α)",
+                    "The threshold reflects the stimulus intensity producing midpoint performance between floor and ceiling; in this study it indicates the sensitivity level where detection probability rises rapidly. Typically in perimetry, a higher threshold indicates reduced sensitivity at that visual-field location."
+                ),
+                (
+                    "Slope (β)",
+                    "The slope describes how quickly detection probability increases with stimulus intensity; steeper slopes imply less variability and more consistent responses across trials. In the study, slope differences reflect changes in response variability associated with glaucoma."
+                ),
+                (
+                    "Guess rate (γ)",
+                    "The guess rate is the lower asymptote of the psychometric function and reflects baseline responding when stimuli are undetectable; here it captures any systematic guessing or response bias. For yes/no perimetry tasks, γ is typically close to 0 but can be increased by response bias."
+                ),
+                (
+                    "Lapse rate (λ)",
+                    "The lapse rate is the upper asymptote deficit reflecting missed detections even at high intensities (e.g., blinks or attentional lapses). In the study, non-zero lapse rates indicate occasional failures even for easy stimuli and slightly reduce the maximum observed performance."
+                ),
+            ]
+
+            df = pd.DataFrame(rows, columns=["Feature", "Interpretation (max 2 sentences)"])
+            st.table(df)
+
             st.divider()
             if st.button("← Back to landing", key="back_from_psych_default"):
                 go_to(PAGE_LANDING)
