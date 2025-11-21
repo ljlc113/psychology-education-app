@@ -806,7 +806,7 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
         st.header(PAGE_WORKING_MEMORY)
 
         if st.session_state.working_tab == "Introduction":
-            st.subheader("Working Memory")
+            st.subheader("Introduction")
             st.write(
                 "Working memory refers to the brain systems that temporarily hold and manipulate information for ongoing cognitive tasks. "
                 "This module explores conceptual models of how short-term information can be maintained and used for decisions and behaviour."
@@ -815,13 +815,35 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
 
         elif st.session_state.working_tab == "Theory":
             st.subheader("Theory")
-            st.write(
-                "Brief theoretical overview: working memory can be supported by persistent neural activity or by transient changes in synaptic weights. "
-                "Models differ in whether information is stored actively via spiking, or silently via short-term synaptic plasticity and reactivation."
-            )
-            st.markdown("- **Persistent activity**: sustained firing keeps information online.")
-            st.markdown("- **Synaptic / activity-silent**: temporary synaptic changes store information without ongoing firing.")
+
+            st.markdown("""
+                Working memory is the system that allows us to temporarily hold and manipulate information,  
+                such as remembering a phone number long enough to type it.
+
+                Traditionally, neuroscientists believed that working memory was maintained through **persistent neural firing**,  
+                meaning that certain neurons continued to fire throughout the delay period after a stimulus disappeared.
+
+                **Later research raised several problems with this view:**
+                - Delay-period firing is often unstable and sometimes disappears entirely  
+                - Delay activity is easily disrupted by distraction  
+                - Maintaining constant firing is metabolically expensive
+
+                ---
+
+                ### Synaptic Theory of Working Memory (Mongillo et al., 2008)
+
+                This model proposes that information can be stored even when neurons are **not firing**,  
+                by using temporary changes in **synaptic strength** created by residual calcium (Ca²⁺) in presynaptic terminals.
+
+                **How it works:**
+                - When a neuron fires, Ca²⁺ enters the synapse; some of this calcium lingers after firing stops  
+                - This lingering Ca²⁺ produces **short-term synaptic facilitation**, a transient strengthening of the connections between recently active neurons  
+                - These strengthened synapses can hold information **silently**, without ongoing neural spikes  
+                - Later, a small nonspecific input can reactivate the same network, producing a brief burst of activity that **retrieves the stored item**
+                """)
+
             st.divider()
+
 
         elif st.session_state.working_tab == "Graph":
             st.subheader("Graph")
