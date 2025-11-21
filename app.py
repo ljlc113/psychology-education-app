@@ -377,11 +377,13 @@ elif st.session_state.page == PAGE_ECONOMIC:
 
         elif st.session_state.econ_tab == "Expected Utility (EU)":
             st.subheader("Expected Utility (EU)")
-            st.markdown("""Expected utility theory: rational agents should evaluate choices by multiplying the utility of outcomes by their probabilities and picking the highest total.
+            st.markdown("""
+            **Expected utility theory:** rational agents should evaluate choices by multiplying the utility of outcomes by their probabilities and picking the highest total.
             - People assign each possible outcomes a utility (a subjective measure of value)
             - They treat probabilities objectively
             - They choose the option that maximizes expected utility
-            - It assumes stable, consistent, and context-independent preferences"""
+            - It assumes stable, consistent, and context-independent preferences
+                    """
             )
             st.markdown(
                 "EU allows **nonlinear utility**, which EV does not consider. However, note that **linear probability weighting** remains an assumption. "
@@ -464,17 +466,14 @@ elif st.session_state.page == PAGE_ECONOMIC:
         elif st.session_state.econ_tab == "Prospect Theory (PT)":
             st.subheader("Prospect Theory (PT)")
             st.markdown("""
-            **Prospect theory:** models real human behavior by showing that we judge outcomes relative to a reference point, fear losses more than we value gains, and misperceive probabilities
+            **Prospect theory:** models real human behavior stemming from the idea that we have both internal subjective estimates of value AND probability.
+            - PT uses a **reference-dependent value function** and **nonlinear probability weighting**. It has distinct domains with different functions for behaviors if they are considered a LOSS or GAIN.
             - **Loss aversion:** losses loom larger than gains, in that a loss of a given size feels more painful than an equivalent gain feels good
             - **Risk-averse for gains:** when faced with a choice between a sure gain and a gamble with a potentially larger gain, people tend to prefer the sure thing
             - **Risk-seeking for losses:** when faced with a choice between a sure loss and a gamble with a potentially larger loss, people are more likely to take the risk to avoid the certain loss
+            - **Framing effect:** human judgements differ when we frame things as 'wins' or 'losses', so there are different shapes for the two domains
             - People **distort probabilities,** overweighting small probabilities (e.g., buying lottery tickets) and underweighting large ones (e.g., insurance choices)
             """)
-
-            st.markdown("PT uses a **reference-dependent value function** and **nonlinear probability weighting** which EU does not consider. It has distinct domains with different functions for behaviors if they are considered a LOSS or GAIN. It stems from the idea that we have both internal subjective estimates of value AND probability.")
-            st.markdown(" For gains (when x is positive) it follows a compressed graph similar to that of expected utility (EU). This is due to people being **risk averse for gains**; we prefer to take confirmed gain than gamble.")
-            st.markdown("For losses (when x is negative) it follows a convex asymptote shape which grows more quickly than for gains. The steepness is because of **loss aversion**; we 'value' a loss more than the equivalent reframed gain (e.g. 100% lose 10 vs. 20% lose 40). People are **risk seeking for losses**; prefer to gamble rather than take a confirmed loss. ")
-            st.markdown("There are different shapes for the domain of losses and gains because prospect theory takes into account that human judgements differ when we frame things as 'wins' vs 'losses' - known as the **framing effect**.")
 
             _show_eq("Value (reference-dependent)", r"v(x) = \begin{cases}(x-r)^{\alpha}, & x \ge r \\ -\lambda\, (r-x)^{\beta}, & x < r\end{cases}")
 
