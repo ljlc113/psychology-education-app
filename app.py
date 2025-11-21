@@ -107,51 +107,8 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
             )
 
             # display the actual study figure uploaded by the user
-            # Ensure an assets directory exists and copy the uploaded image into it so the file can be committed to the repo if desired
-            import os, shutil
-            assets_dir = os.path.join(os.getcwd(), "assets")
-            os.makedirs(assets_dir, exist_ok=True)
-            source_img = "/mnt/data/693b4dce-bc9f-4860-826d-f6a1ebe56075.png"
-            target_img = os.path.join(assets_dir, "miranda_henson.png")
-            try:
-                # Copy uploaded image into assets folder (will work in this running environment)
-                if os.path.exists(source_img) and not os.path.exists(target_img):
-                    shutil.copy(source_img, target_img)
-            except Exception:
-                pass
-
-            # Try to display the asset from the repository-relative assets path first
-            try:
-                from PIL import Image
-                img = Image.open(target_img if os.path.exists(target_img) else source_img)
-                st.image(img, caption="Examples of psychometric data from Miranda & Henson (2008)")
-            except Exception as e:
-                st.warning("Could not load the uploaded figure; showing a representative illustrative curve instead.")
-                # fallback: draw a representative figure
-                import numpy as np
-                import matplotlib.pyplot as plt
-                from math import erf
-
-                def Phi_scalar(z):
-                    from math import erf as _erf
-                    return 0.5 * (1 + _erf(z / np.sqrt(2)))
-
-                alpha_rep = 0.0
-                beta_rep = 3.0
-                gamma_rep = 0.02
-                lambda_rep = 0.02
-
-                x_plot = np.linspace(-3, 3, 300)
-                y_plot = gamma_rep + (1 - gamma_rep - lambda_rep) * np.array([Phi_scalar((xi - alpha_rep) * beta_rep) for xi in x_plot])
-
-                fig_rep, ax_rep = plt.subplots(figsize=(7, 3.5))
-                ax_rep.plot(x_plot, y_plot, lw=2)
-                ax_rep.set_xlabel("Stimulus intensity (a.u.)")
-                ax_rep.set_ylabel("Proportion seen")
-                ax_rep.set_ylim(-0.02, 1.02)
-                ax_rep.set_title("Representative psychometric curve (illustrative)")
-                ax_rep.grid(alpha=0.2)
-                st.pyplot(fig_rep)
+            # Display the embedded figure directly from the repo's assets folder
+            st.image("assets/miranda_henson.png", caption="Examples of psychometric data from Miranda & Henson (2008)")
 
             st.write(
                 "These plots show how the probability of seeing a flash changes with its brightness for four example locations. In some cases the two testing methods agree closely, while in others one method shows lower sensitivity or more variability."
