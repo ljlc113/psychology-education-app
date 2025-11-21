@@ -256,6 +256,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
 
 
     def _plot_simple(x, y, xlabel, ylabel, title):
+        import matplotlib.pyplot as plt   # <-- REQUIRED
         fig, ax = plt.subplots()
         ax.plot(x, y)
         ax.set_xlabel(xlabel)
@@ -315,7 +316,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
             # Insert the exact Overview text provided by the user
             st.subheader("Decision Models")
             st.markdown(
-                """
+            """
             - **Expected Value (EV):** linear utility, linear probability.
             - **Expected Utility (EU):** nonlinear utility over outcomes.
             - **Prospect Theory (PT):** reference-dependent value and nonlinear probability weighting.
@@ -326,7 +327,7 @@ elif st.session_state.page == PAGE_ECONOMIC:
             - **Divisive normalization** → relative to the mean, not bounded.
             - **Recurrent divisive normalization** → bounded, compresses large values.
             - **Adaptive gain / logistic value** → nonlinear, highlights contrasts around the mean.
-                """
+            """
             )
 
         elif st.session_state.econ_tab == "Expected Value (EV)":
@@ -375,7 +376,80 @@ elif st.session_state.page == PAGE_ECONOMIC:
 
         elif st.session_state.econ_tab == "Expected Utility (EU)":
             st.subheader("Expected Utility (EU)")
-            st.write("Placeholder for EU content.")
+            # -----------------------------
+            # 2. Explanation
+            # -----------------------------
+            st.markdown(
+                "EU allows **nonlinear utility**, which EV does not consider. "
+                "We use a sign–power (CRRA-style) function that raises value to the power of α, "
+                "capturing diminishing sensitivity for gains and losses."
+            )
+
+            # -----------------------------
+            # 3. Formatted equation
+            # -----------------------------
+            st.latex(r"EU(v) = \operatorname{sign}(v)\,|v|^{\alpha}")
+
+            # -----------------------------
+            # 4. Slider for curvature
+            # -----------------------------
+            alpha = st.slider("Curvature α", 0.2, 2.0, 0.8, 0.05)
+
+            st.divider()
+
+            # -----------------------------
+            # 5. Graphics
+            # -----------------------------
+            st.subheader("Graphics of EU utility and probability weighting:")
+
+            col_eq1, col_eq2 = st.columns(2)
+
+            with col_eq1:
+                st.latex(r"u(v) = (1 \text{ if } v\ge0 \text{ else } -1)\cdot |v|^{\alpha}")
+                xr = np.linspace(-100, 100, 400)
+                u_vals = np.array([(1 if v >= 0 else -1) * (abs(v) ** alpha) for v in xr], dtype=float)
+                _plot_simple(xr, u_vals, "Outcome v", "Utility u(v)", f"Utility (α={alpha:.2f})")
+
+            with col_eq2:
+                st.latex(r"w(p) = p")
+                pr = np.linspace(0, 1, 200)
+                _plot_simple(pr, pr, "Probability p", "Weight w(p)", "Identity weighting: w(p)=p")
+
+            st.divider()
+
+            # -----------------------------
+            # 6. Worked Examples
+            # -----------------------------
+            st.subheader("Worked examples (EU)")
+
+            # utility function
+            def u_func(v, alpha):
+                return (1 if v >= 0 else -1) * (abs(v) ** alpha)
+
+            # expected utility of two-outcome gamble
+            def EU_value(p, x1, x2):
+                return p * u_func(x1, alpha) + (1 - p) * u_func(x2, alpha)
+
+            # Example 1
+            p1 = 0.0001
+            EU1 = EU_value(p1, 100_000.0, 0.0)
+
+            # Example 2
+            p2 = 0.5
+            EU2 = EU_value(p2, 55.0, -50.0)
+
+            colA, colB = st.columns(2)
+
+            with colA:
+                st.markdown("**Lottery ticket:** 0.01% chance to win 100,000; otherwise 0")
+                st.latex(r"EU = p\,u(100{,}000) + (1-p)\,u(0)")
+                st.metric("EU (lottery)", f"{EU1:.2f}")
+
+            with colB:
+                st.markdown("**50–50 gamble:** +55 with 50%, −50 with 50%")
+                st.latex(r"EU = 0.5\,u(55) + 0.5\,u(-50)")
+                st.metric("EU (gamble)", f"{EU2:.2f}")
+
 
         elif st.session_state.econ_tab == "Prospect Theory (PT)":
             st.subheader("Prospect Theory (PT)")
