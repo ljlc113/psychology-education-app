@@ -458,19 +458,44 @@ elif st.session_state.page == PAGE_ECONOMIC:
             st.subheader("Prospect Theory (PT)")
             st.markdown("PT uses a **reference-dependent value function** and **nonlinear probability weighting** which EU does not consider. It has distinct domains with different functions for behaviors if they are considered a LOSS or GAIN. It stems from the idea that we have both internal subjective estimates of value AND probability.")
             st.markdown(" For gains (when x is positive) it follows a compressed graph similar to that of expected utility (EU). This is due to people being **risk averse for gains**; we prefer to take confirmed gain than gamble.")
-            st.markdown("For losses (when x is negative) it follows a convex asymptote shape which grows more quickly than for gains. The steepness is because of **loss aversion**; we 'value' a loss more than the equivalent reframed gain (e.g. 100% lose 10 vs. 20% lose 40). ")
-            st.markdown("People are **risk seeking for losses**; prefer to gamble rather than take a confirmed loss. There are different shapes for the domain of losses and gains because prospect theory takes into account that human judgements differ when we frame things as 'wins' vs 'losses' - known as the **framing effect**.")
+            st.markdown("For losses (when x is negative) it follows a convex asymptote shape which grows more quickly than for gains. The steepness is because of **loss aversion**; we 'value' a loss more than the equivalent reframed gain (e.g. 100% lose 10 vs. 20% lose 40). People are **risk seeking for losses**; prefer to gamble rather than take a confirmed loss. ")
+            st.markdown("There are different shapes for the domain of losses and gains because prospect theory takes into account that human judgements differ when we frame things as 'wins' vs 'losses' - known as the **framing effect**.")
 
             st.subheader("Parameters")
             colA, colB = st.columns(2)
             with colA:
                 alpha = st.slider("Curvature for gains (α)", 0.2, 1.5, 0.88, 0.02)
+                st.caption(
+                "Sliding α left increases curvature, flattening the value function for positive outcomes so gains feel less sensitive; sliding α right makes the curve steeper so equal increments in gains feel more impactful. "
+                "In practice, lower α means stronger diminishing sensitivity (more risk aversion for gains), while higher α means gains feel more linear and risk attitudes become less strongly averse."
+                )
                 gamma = st.slider("Weighting (gains) γ", 0.2, 1.5, 0.61, 0.01)
+                st.caption(
+                "Sliding γ left makes the probability weighting curve more curved, exaggerating small probabilities and down-weighting moderate ones; sliding right straightens the curve so weighting becomes closer to the actual objective probabilities. "
+                "In practice, lower γ means people overweight rare gains (e.g., lottery tickets), while higher γ means they behave more like expected-value decision makers for gains."
+                )
                 ref = st.slider("Reference point r", -50.0, 50.0, 0.0, 1.0)
+                st.caption(
+                "Sliding r left or right shifts the entire value function horizontally, changing which outcomes are categorized as gains versus losses. "
+                "In practice, changing r captures framing: different baselines cause the same outcome to feel like a gain or loss, strongly influencing risk preference."
+                )
+
             with colB:
                 beta = st.slider("Curvature for losses (β)", 0.2, 1.5, 0.88, 0.02)
+                st.caption(
+                "Sliding β left increases curvature so losses become steeper and more sensitive at small magnitudes; sliding β right flattens the loss function so sensitivity grows less rapidly. "
+                "In practice, lower β means people react more sharply to small losses, while higher β reduces the disproportionate impact of small losses on decision making."
+                )
                 delta = st.slider("Weighting (losses) δ", 0.2, 1.5, 0.69, 0.01)
+                st.caption(
+                "Sliding δ left increases curvature in the weighting function for losses, causing overweighting of small-probability losses; sliding δ right makes weighting more linear with fewer distortions. "
+                "In practice, lower δ makes people fear unlikely losses more intensely, while higher δ means they judge loss probabilities more objectively."
+                )
                 lam = st.slider("Loss aversion λ", 0.5, 4.0, 2.25, 0.05)
+                st.caption(
+                "Sliding λ left reduces the steepness of the loss side of the value function, while sliding right steepens it dramatically to amplify the psychological weight of losses. "
+                "In practice, higher λ means losses feel much more painful than equivalent gains, producing strong avoidance of sure losses and greater willingness to gamble to escape them."
+                )
 
             _show_eq("Value (reference-dependent)", r"v(x) = \begin{cases}(x-r)^{\alpha}, & x \ge r \\ -\lambda\, (r-x)^{\beta}, & x < r\end{cases}")
 
