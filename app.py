@@ -241,6 +241,7 @@ elif st.session_state.page == PAGE_PSYCHOMETRICS:
 
 # Economic Choices + Utility Curves page
 elif st.session_state.page == PAGE_ECONOMIC:
+    import numpy as np
     # ---------------------------------------
     # Helper utilities
     # ---------------------------------------
