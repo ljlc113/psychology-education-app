@@ -616,13 +616,13 @@ elif st.session_state.page == PAGE_ECONOMIC:
             def_v1 = "1 2 5 10"
             def_v2 = "1 5 9 10"
 
-            st.info("Tip: paste different arrays (e.g., low-biased vs high-biased) to see how context shifts each normalization.")
+            st.info("Tip: paste different arrays (e.g., low-biased vs high-biased) to see how context shifts each normalization. The default group values are set so that Group 1 is low-biased and Group 2 is high-biased, but they both have the same range.")
 
             col_in1, col_in2 = st.columns(2)
             with col_in1:
                 v1_str = st.text_input("Restaurant Group 1 (comma/space separated)", value=def_v1)
             with col_in2:
-                v2_str = st.text_input("Restaurant Group 1 (comma/space separated)", value=def_v2)
+                v2_str = st.text_input("Restaurant Group 2 (comma/space separated)", value=def_v2)
 
             col_in3, col_in4 = st.columns([1,1])
             with col_in3:
@@ -733,6 +733,53 @@ elif st.session_state.page == PAGE_ECONOMIC:
             ax[1].set_title('Normalization models (Restaurant Group 2)')
 
             st.pyplot(fig, clear_figure=True)
+
+            # --------- Insert after the plots---------
+            st.markdown("### Interpretations (open to read)")
+            # Range normalization
+            with st.expander("Range normalization", expanded=False):
+                st.markdown(
+                    "1. **Means differ, ranges same:** Graphically the normalized curves will be offset vertically — the group with the higher raw values will sit higher after dividing by its range because range scaling does not remove mean differences. "
+                    "Contextually, this means choices will still favour the higher-mean group since range normalization preserves mean offsets and does not center values around a common baseline.\n\n"
+                    "2. **Ranges differ, means same:** Graphically one group's output will be compressed or stretched depending on its range (larger raw range → larger denominator → more compressed normalized values). "
+                    "Contextually, items in the large-range group will appear less extreme after normalization while items in the small-range group will appear relatively more contrasted, which can bias choice toward the small-range set.\n\n"
+                    "3. **Means and ranges differ:** Graphically you will see a combination of vertical offset and differential scaling, producing potentially non-intuitive relative rankings between groups. "
+                    "Contextually, interpretation must consider both effects: a high mean can push values up while a large range can simultaneously compress them, so relative attractiveness depends on the mixture of both."
+                )
+
+            # Divisive normalization
+            with st.expander("Divisive normalization", expanded=False):
+                st.markdown(
+                    "1. **Means differ, ranges same:** Graphically dividing by the mean rescales each group inversely with its average, so the higher-mean group will appear compressed (values closer to zero/one) compared with the lower-mean group. "
+                    "Contextually, this makes options evaluated relative to their context average — high-mean contexts make absolute values look smaller, reducing their apparent advantage.\n\n"
+                    "2. **Ranges differ, means same:** Graphically divisive normalization is insensitive to range per se, so both groups will keep similar proportional shapes when their means match. "
+                    "Contextually, this means differences in spread do not drive relative valuation — decisions focus on how values compare to the group mean rather than on raw dispersion.\n\n"
+                    "3. **Means and ranges differ:** Graphically the dominant effect will be mean-based compression/expansion, with range modulating how the distribution fills that scaled space. "
+                    "Contextually, divisive normalization emphasizes context-relative judgments: a high mean will down-weight absolute values while range differences influence fine-grained distinctions within that scaled space."
+                )
+
+            # Recurrent divisive normalization
+            with st.expander("Recurrent normalization", expanded=False):
+                st.markdown(
+                    "1. **Means differ, ranges same:** Graphically the recurrent form v/(v + mean) produces stronger compression for groups with larger means, pushing outputs toward a smaller dynamic range. "
+                    "Contextually, this produces competition-like suppression where high-mean contexts reduce the perceived value of every option, making standout options less prominent.\n\n"
+                    "2. **Ranges differ, means same:** Graphically larger ranges shift more values into the nonlinear portion of the denominator so the curve stretches and shows greater separation among extremes. "
+                    "Contextually, recurrent normalization accentuates actual differences in large-range groups (more contrast at high values) while compressing small-value differences, shaping choices toward extremes when ranges are large.\n\n"
+                    "3. **Means and ranges differ:** Graphically you will see both baseline compression from mean differences and range-dependent stretching, producing interactions in how peaks and tails map to normalized outputs. "
+                    "Contextually, this can create non-monotonic comparisons: a group with a high mean but large range may be judged similarly to a lower-mean small-range group depending on how the recurrent suppression balances numerator and denominator."
+                )
+
+            # Adaptive gain / Logistic
+            with st.expander("Adaptive gain", expanded=False):
+                st.markdown(
+                    "1. **Means differ, ranges same:** Graphically the logistic is centered on the group mean, so differing means produce horizontal shifts of the sigmoid — sensitivity is concentrated around each group's average. "
+                    "Contextually, this means the same absolute value can be treated as a gain in one context and a loss in another, changing preference patterns via framing around the contextual mean.\n\n"
+                    "2. **Ranges differ, means same:** Graphically larger ranges spread points farther from the mean so more values fall into the sigmoid tails (depending on slope k), while small ranges keep most values in the central, shallow zone. "
+                    "Contextually, with larger ranges the model amplifies contrasts (making extremes more salient), whereas with small ranges differences are muted and options appear more similar.\n\n"
+                    "3. **Means and ranges differ:** Graphically you observe both a horizontal shift (mean) and variable dispersion relative to the slope — the logistic will emphasize different parts of each distribution depending on how far values sit from their mean and how steep k is. "
+                    "Contextually, this produces flexible framing: high slope and a shifted mean create very context-sensitive comparisons, while low slope reduces context sensitivity and yields smoother, less contrasty evaluations."
+                )
+
 
 # Working Memory page
 elif st.session_state.page == PAGE_WORKING_MEMORY:
