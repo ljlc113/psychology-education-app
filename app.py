@@ -835,8 +835,7 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
             st.divider()
 
         elif st.session_state.working_tab == "Theory":
-            st.subheader("Theory")
-            st.header("Equations (Short-term facilitation / depression)")
+            st.subheader("Theory - Equations (Short-term facilitation / depression)")
             st.latex(r"\frac{dx}{dt} = \frac{1-x}{\tau_D} - u\,x\,\delta(t-t_{sp})")
             st.latex(r"\frac{du}{dt} = \frac{U - u}{\tau_F} + U(1-u)\,\delta(t-t_{sp})")
             st.markdown(
@@ -974,10 +973,6 @@ elif st.session_state.page == PAGE_WORKING_MEMORY:
         If `u` increases sufficiently and `x` doesn't deplete too much, `J_eff` can increase during a brief stimulus — that's facilitation. If `x` is strongly depleted, `J_eff` will fall (depression dominates).
         """
             )
-
-            st.markdown("---")
-            st.markdown("If you want this same explanation added as a static second page (e.g., a printable/markdown page) or integrated into your existing multi-page selector, tell me where your current page selector lives in `app.py` and I will provide a one-line patch you can paste in.")
-
 
         else:
             st.error("Unknown working memory tab selected.")
